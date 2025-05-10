@@ -24,6 +24,16 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+        "jsEngine": "jsc",
+
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Cho phép ứng dụng truy cập ảnh để cập nhật ảnh đại diện"
+        }
+      ]
+    ]
   }
 }
