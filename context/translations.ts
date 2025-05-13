@@ -21,14 +21,6 @@ export const translations = {
     passwordMismatch: 'Mật khẩu không khớp',
     darkMode: 'Chế độ tối',
     language: 'Ngôn ngữ',
-
-    // 🔥 Key mới bổ sung
-    passwordTooShort: 'Mật khẩu phải có ít nhất 6 ký tự',
-    emailAlreadyInUse: 'Email đã được sử dụng',
-    weakPassword: 'Mật khẩu quá yếu',
-    genericError: 'Đã xảy ra lỗi. Vui lòng thử lại sau.',
-    loading: 'Đang xử lý...',
-     userNotFound: 'Không tìm thấy người dùng với email này',
   },
   en: {
     email: 'Email',
@@ -52,13 +44,5 @@ export const translations = {
     passwordMismatch: 'Passwords do not match',
     darkMode: 'Dark Mode',
     language: 'Language',
-
-    // 🔥 Key mới bổ sung
-    passwordTooShort: 'Password must be at least 6 characters',
-    emailAlreadyInUse: 'Email is already in use',
-    weakPassword: 'Password is too weak',
-    genericError: 'An unexpected error occurred. Please try again.',
-    loading: 'Processing...',
-    userNotFound: 'User not found with this email',
   },
 };
