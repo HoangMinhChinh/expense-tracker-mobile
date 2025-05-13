@@ -2,13 +2,36 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import HomeScreen from '../screens/HomeScreen';
-import ExpenseScreen from '../screens/ExpenseScreen';
-import StatsScreen from '../screens/StatsScreen';
-import UserScreen from '../screens/UserScreen';
-import AddServiceScreen from '../screens/thu chi/AddServiceScreen';
+import HomeScreen from '../HomeScreen';
+import ExpenseScreen from '../ExpenseScreen';
+import StatsScreen from '../StatsScreen';
+import UserScreen from '../UserScreen';
+import AddServiceScreen from '../thu chi/AddServiceScreen';
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
+
+// Create a stack navigator for Home tab to include AddService
+const HomeStack = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen 
+        name="HomeScreen" 
+        component={HomeScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen 
+        name="AddService" 
+        component={AddServiceScreen}
+        options={{ 
+          headerShown: true,
+          headerTitle: 'Thêm Thu Chi',
+          headerBackTitle: 'Quay lại'
+        }}
+      />
+    </Stack.Navigator>
+  );
+};
 
 const MainTabNavigator = () => {
   return (
@@ -49,18 +72,10 @@ const MainTabNavigator = () => {
         },
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Home" component={HomeStack} />
       <Tab.Screen name="Expenses" component={ExpenseScreen} />
       <Tab.Screen name="Stats" component={StatsScreen} />
       <Tab.Screen name="Profile" component={UserScreen} />
-      <Tab.Screen 
-        name="AddService" 
-        component={AddServiceScreen}
-        options={{
-          tabBarButton: () => null,
-          tabBarStyle: { display: 'none' }
-        }}
-      />
     </Tab.Navigator>
   );
 };
