@@ -1,65 +1,55 @@
-import React from 'react';
+// navigation/MainTabNavigator.tsx (cập nhật để dùng translations sau này)
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import HomeScreen from '../screens/HomeScreen';
-import ExpenseScreen from '../screens/ExpenseScreen';
-import StatsScreen from '../screens/StatsScreen';
+import TransactionScreen from '../screens/TransactionScreen';
 import UserScreen from '../screens/UserScreen';
-import AddServiceScreen from '../screens/thu chi/AddServiceScreen';
+import { translations } from '../style/translations';
 
 const Tab = createBottomTabNavigator();
 
 const MainTabNavigator = () => {
+  const language = 'vi'; // Hardcode tạm thời, sẽ thay bằng state nếu cần
+  const t = translations[language];
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarIcon: ({ focused, color, size }) => {
-          let iconName: string = '';
-
-          switch (route.name) {
-            case 'Home':
-              iconName = focused ? 'home' : 'home-outline';
-              break;
-            case 'Expenses':
-              iconName = focused ? 'wallet' : 'wallet-outline';
-              break;
-            case 'Stats':
-              iconName = focused ? 'stats-chart' : 'stats-chart-outline';
-              break;
-            case 'Profile':
-              iconName = focused ? 'person' : 'person-outline';
-              break;
-            default:
-              iconName = 'help-outline';
-          }
-
+        tabBarIcon: ({ color, size }) => {
+          let iconName: string;
+          if (route.name === 'Home') iconName = 'home';
+          else if (route.name === 'Transaction') iconName = 'receipt';
+          else if (route.name === 'User') iconName = 'person';
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#007bff',
-        tabBarInactiveTintColor: 'gray',
+        tabBarActiveTintColor: '#ff4d4f',
+        tabBarInactiveTintColor: '#888',
         tabBarStyle: {
-          paddingVertical: 5,
-          borderTopLeftRadius: 15,
-          borderTopRightRadius: 15,
-          backgroundColor: '#fff',
-          position: 'absolute',
-          height: 60,
+          borderTopWidth: 1,
+          borderTopColor: '#ccc',
+          paddingVertical: 10,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          marginTop: 4,
         },
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Expenses" component={ExpenseScreen} />
-      <Tab.Screen name="Stats" component={StatsScreen} />
-      <Tab.Screen name="Profile" component={UserScreen} />
-      <Tab.Screen 
-        name="AddService" 
-        component={AddServiceScreen}
-        options={{
-          tabBarButton: () => null,
-          tabBarStyle: { display: 'none' }
-        }}
+      <Tab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{ tabBarLabel: t.home }}
+      />
+      <Tab.Screen
+        name="Transaction"
+        component={TransactionScreen}
+        options={{ tabBarLabel: t.transaction }}
+      />
+      <Tab.Screen
+        name="User"
+        component={UserScreen}
+        options={{ tabBarLabel: t.user }}
       />
     </Tab.Navigator>
   );

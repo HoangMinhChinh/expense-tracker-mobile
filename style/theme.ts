@@ -1,4 +1,3 @@
-// theme.ts
 interface Theme {
   background: string;
   text: string;
@@ -9,6 +8,8 @@ interface Theme {
   button: string;
   buttonText: string;
   cardBackground: string;
+  error: string; // Thêm màu cho thông báo lỗi
+  success: string; // Thêm màu cho thông báo thành công
 }
 
 export const lightTheme: Theme = {
@@ -18,9 +19,11 @@ export const lightTheme: Theme = {
   inputText: '#000',
   placeholder: '#888',
   border: '#ccc',
-  button: '#007bff',
+  button: '#ff4d4f',
   buttonText: '#fff',
-  cardBackground: '#fff'
+  cardBackground: '#fff',
+  error: '#ff0000', // Màu đỏ cho lỗi
+  success: '#008000', // Màu xanh lá cho thành công
 };
 
 export const darkTheme: Theme = {
@@ -30,7 +33,9 @@ export const darkTheme: Theme = {
   inputText: '#fff',
   placeholder: '#aaa',
   border: '#555',
-  button: '#0056b3',
+  button: '#ff4d4f',
   buttonText: '#fff',
-  cardBackground: '#3d3d3d'
+  cardBackground: '#3d3d3d',
+  error: '#ff4444', // Màu đỏ nhạt hơn cho dark mode
+  success: '#00ff00', // Màu xanh lá sáng hơn cho dark mode
 };
