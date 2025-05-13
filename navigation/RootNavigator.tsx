@@ -6,6 +6,7 @@ import SignupScreen from '../screens/auth/SignupScreen';
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
 import MainTabNavigator from './MainTabNavigator';
 import { AuthContext } from '../context/AuthContext';
+import UserScreen from '../screens/UserScreen'; // ✅ Thêm import này
 
 const Stack = createNativeStackNavigator();
 
@@ -20,6 +21,7 @@ const AuthStack = () => (
 const AppStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="MainTab" component={MainTabNavigator} />
+    <Stack.Screen name="User" component={UserScreen} />
   </Stack.Navigator>
 );
 

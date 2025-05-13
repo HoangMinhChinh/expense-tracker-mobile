@@ -1,7 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useNavigation, EventArg } from '@react-navigation/native';
-import { useLanguage } from '../context/LanguageContext';
 import {
   View,
   Text,
@@ -21,19 +18,24 @@ import { auth } from '../config/firebaseConfig';
 import { ref, get, set } from 'firebase/database';
 import { db } from '../config/firebaseConfig';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-// Add type definition for RootStackParamList
+// ✅ Khai báo kiểu navigation chính xác
 type RootStackParamList = {
   Home: undefined;
   User: undefined;
   Login: undefined;
 };
 
-// Update the navigation type
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const UserScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { theme } = useTheme();
+  const { t } = useLanguage();
+
   const [userData, setUserData] = useState({
     fullName: '',
     age: '',
@@ -41,8 +43,34 @@ const UserScreen = () => {
     avatarUrl: '',
   });
 
-  const { isDarkMode, toggleTheme, theme } = useTheme();
-  const { language, setLanguage, t } = useLanguage();
+  useEffect(() => {
+    const loadUserData = async () => {
+      const user = auth.currentUser;
+      if (!user) {
+        navigation.navigate('Login'); // ✅ Không còn báo lỗi TS
+        return;
+      }
+
+      try {
+        const userRef = ref(db, `users/${user.uid}`);
+        const snapshot = await get(userRef);
+
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          setUserData({
+            fullName: data.fullName || '',
+            age: data.age || '',
+            gender: data.gender || '',
+            avatarUrl: data.avatarUrl || '',
+          });
+        }
+      } catch (error) {
+        Alert.alert('Lỗi', 'Không thể tải thông tin người dùng!');
+      }
+    };
+
+    loadUserData();
+  }, []);
 
   const pickImage = async () => {
     try {
@@ -60,136 +88,141 @@ const UserScreen = () => {
         await FileSystem.copyAsync({ from: uri, to: localUri });
         setUserData((prev) => ({ ...prev, avatarUrl: localUri }));
         await AsyncStorage.setItem('avatarUri', localUri);
-
-        const user = auth.currentUser;
-        if (user) {
-          // First get existing data
-          const userRef = ref(db, `users/${user.uid}`);
-          const snapshot = await get(userRef);
-          const existingData = snapshot.exists() ? snapshot.val() : {};
-          
-          // Then update with new data while preserving existing data
-          await set(userRef, {
-            ...existingData,
-            avatarUrl: localUri
-          });
-        }
       }
-    } catch (err) {
+    } catch {
       Alert.alert('Lỗi', 'Không thể chọn ảnh.');
     }
+  };
+
+  const handleSave = async () => {
+    const { fullName, age, gender, avatarUrl } = userData;
+    const user = auth.currentUser;
+    if (!user) return;
+
+    if (!fullName.trim()) {
+      Alert.alert('Lỗi', 'Vui lòng nhập họ tên!');
+      return;
+    }
+
+    if (!age || isNaN(Number(age)) || Number(age) > 150) {
+      Alert.alert('Lỗi', 'Tuổi không hợp lệ!');
+      return;
+    }
+
+    if (!gender) {
+      Alert.alert('Lỗi', 'Vui lòng chọn giới tính!');
+      return;
+    }
+
+    const userRef = ref(db, `users/${user.uid}`);
+    await set(userRef, { fullName, age, gender, avatarUrl });
+
+    Alert.alert('Thành công', 'Đã lưu thông tin!');
   };
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
-    } catch (err) {
+    } catch {
       Alert.alert('Lỗi', 'Không thể đăng xuất!');
     }
   };
 
-  const handleSave = async () => {
-    try {
-      const user = auth.currentUser;
-      if (!user) return;
-
-      // Validate required fields
-      if (!userData.fullName.trim()) {
-        Alert.alert('Lỗi', 'Vui lòng nhập họ tên!');
-        return;
-      }
-
-      if (!userData.age || parseInt(userData.age, 10) > 150) {
-        Alert.alert('Lỗi', 'Tuổi không hợp lệ!');
-        return;
-      }
-
-      if (!userData.gender) {
-        Alert.alert('Lỗi', 'Vui lòng chọn giới tính!');
-        return;
-      }
-
-      const userRef = ref(db, `users/${user.uid}`);
-      await set(userRef, {
-        fullName: userData.fullName,
-        age: userData.age,
-        gender: userData.gender,
-        avatarUrl: userData.avatarUrl,
-      });
-
-      Alert.alert(
-        '✅ Thành công', 
-        'Đã lưu thông tin thành công!',
-        [
-          {
-            text: 'OK',
-            onPress: () => navigation.navigate('Home')
-          }
-        ]
-      );
-    } catch (err) {
-      Alert.alert('❌ Lỗi', 'Không thể lưu thông tin!');
-    }
-  };
-
-  useEffect(() => {
-    const loadUserData = async () => {
-      const user = auth.currentUser;
-      if (!user) {
-        navigation.navigate('Login');
-        return;
-      }
-
-      try {
-        const userRef = ref(db, `users/${user.uid}`);
-        const snapshot = await get(userRef);
-
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          // Check if all required fields are present
-          if (data.fullName?.trim() && data.age && data.gender) {
-            navigation.navigate('Home');
-            return;
-          }
-          // If any field is missing, set existing data and stay on UserScreen
-          setUserData({
-            fullName: data.fullName || '',
-            age: data.age || '',
-            gender: data.gender || '',
-            avatarUrl: data.avatarUrl || '',
-          });
-        }
-      } catch (error) {
-        console.error('Load user data failed:', error);
-        Alert.alert('Lỗi', 'Không thể tải thông tin người dùng!');
-      }
-    };
-    loadUserData();
-  }, []);
-
-  // Add backButton handler to prevent going back if info is incomplete
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', (e: EventArg<'beforeRemove', true>) => {
-      // Prevent going back if user info is incomplete
-      if (!userData.fullName?.trim() || !userData.age || !userData.gender) {
-        e.preventDefault();
-        Alert.alert(
-          'Thông báo',
-          'Vui lòng cập nhật đầy đủ thông tin trước khi tiếp tục!',
-          [{ text: 'OK' }]
-        );
-      }
-    });
-
-    return unsubscribe;
-  }, [navigation, userData]);
-
   return (
-    <ScrollView>
-      <Text style={{ textAlign: 'center' }}>{t.fullName}</Text>
-      {/* UI content */}
+    <ScrollView contentContainerStyle={styles.container}>
+      <TouchableOpacity onPress={pickImage}>
+        <Image
+          source={
+            userData.avatarUrl
+              ? { uri: userData.avatarUrl }
+              : require('../assets/avatar-placeholder.png')
+          }
+          style={styles.avatar}
+        />
+        <Text style={styles.linkText}>Chọn ảnh đại diện</Text>
+      </TouchableOpacity>
+
+      <TextInput
+        placeholder="Họ và tên"
+        value={userData.fullName}
+        onChangeText={(text) => setUserData({ ...userData, fullName: text })}
+        style={[styles.input, { color: theme.text, backgroundColor: theme.inputBg }]}
+        placeholderTextColor={theme.placeholder}
+      />
+
+      <TextInput
+        placeholder="Tuổi"
+        keyboardType="numeric"
+        value={userData.age}
+        onChangeText={(text) => setUserData({ ...userData, age: text })}
+        style={[styles.input, { color: theme.text, backgroundColor: theme.inputBg }]}
+        placeholderTextColor={theme.placeholder}
+      />
+
+      <TextInput
+        placeholder="Giới tính (nam/nữ)"
+        value={userData.gender}
+        onChangeText={(text) => setUserData({ ...userData, gender: text })}
+        style={[styles.input, { color: theme.text, backgroundColor: theme.inputBg }]}
+        placeholderTextColor={theme.placeholder}
+      />
+
+      <TouchableOpacity style={styles.button} onPress={handleSave}>
+        <Text style={styles.buttonText}>Lưu thông tin</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.logoutText}>Đăng xuất</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    padding: 20,
+    paddingTop: 60,
+  },
+  avatar: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginBottom: 10,
+  },
+  linkText: {
+    color: '#007bff',
+    marginBottom: 20,
+  },
+  input: {
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+  },
+  button: {
+    backgroundColor: '#28a745',
+    padding: 14,
+    borderRadius: 8,
+    width: '100%',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  logoutButton: {
+    marginTop: 20,
+    padding: 10,
+  },
+  logoutText: {
+    color: 'red',
+    fontSize: 16,
+  },
+});
 
 export default UserScreen;
