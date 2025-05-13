@@ -1,126 +1,151 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  FlatList,
-  TouchableOpacity,
+  View, Text, Image, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { auth, db } from '../config/firebaseConfig';
-import { ref, onValue } from 'firebase/database';
-import { translations } from '../style/translations';
-import { lightTheme, darkTheme } from '../style/theme';
-import { RootStackParamList } from '../navigation/RootNavigator';
+import { ref, get, query, orderByChild, equalTo } from 'firebase/database';
+import { useTheme } from '../context/ThemeContext';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-type Props = NativeStackScreenProps<RootStackParamList>;
-
-type Expense = {
-  id: string;
-  name: string;
-  amount: string;
+type RootStackParamList = {
+  Home: undefined;
+  User: undefined;
+  AddService: undefined;
 };
 
-const HomeScreen: React.FC<Props> = ({ navigation }) => {
-  const [language, setLanguage] = useState<'vi' | 'en'>('vi');
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [username, setUsername] = useState('User');
-  const [expenses, setExpenses] = useState<Expense[]>([]);
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-  const theme = isDarkMode ? darkTheme : lightTheme;
-  const t = translations[language];
+interface Expense {
+  id: string;
+  name: string;
+  amount: number;
+  date: string;
+  type: 'income' | 'expense';
+}
 
+const HomeScreen = () => {
+  const { theme } = useTheme();
+  const navigation = useNavigation<NavigationProp>();
+  const [userName, setUserName] = useState('Người dùng');
+  const [transactions, setTransactions] = useState<Expense[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch user data and transactions
   useEffect(() => {
-    const user = auth.currentUser;
-    if (user) {
-      const userRef = ref(db, `users/${user.uid}`);
-      onValue(userRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data && data.fullName) {
-          setUsername(data.fullName);
-        } else {
-          setUsername(user.displayName || 'User');
-        }
-      });
+    const fetchData = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
 
-      const expensesRef = ref(db, `expenses/${user.uid}`);
-      onValue(expensesRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          const loadedExpenses: Expense[] = Object.keys(data).map((key) => ({
-            id: key,
-            name: data[key].name,
-            amount: `${data[key].amount.toLocaleString()} đ`,
-          }));
-          setExpenses(loadedExpenses);
-        } else {
-          setExpenses([]);
+      try {
+        // Fetch user name from Realtime Database
+        const userRef = ref(db, 'users/' + user.uid);
+        const userSnapshot = await get(userRef);
+        if (userSnapshot.exists()) {
+          setUserName(userSnapshot.val().fullName || 'Người dùng');
         }
-      });
-    }
+
+        // Fetch transactions from Realtime Database
+        const transactionsRef = ref(db, 'transactions');
+        const userTransactionsQuery = query(
+          transactionsRef,
+          orderByChild('userId'),
+          equalTo(user.uid)
+        );
+
+        const transactionSnapshot = await get(userTransactionsQuery);
+        const fetchedTransactions: Expense[] = [];
+
+        if (transactionSnapshot.exists()) {
+          transactionSnapshot.forEach((childSnapshot) => {
+            fetchedTransactions.push({
+              id: childSnapshot.key,
+              ...childSnapshot.val()
+            });
+          });
+        }
+
+        // Sắp xếp theo ngày mới nhất
+        fetchedTransactions.sort((a, b) => 
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+
+        setTransactions(fetchedTransactions);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
-
-  const renderExpenseItem = ({ item }: { item: Expense }) => (
-    <View style={[styles.expenseItem, { backgroundColor: theme.inputBg, borderColor: theme.border }]}>
-      <Text style={[styles.expenseName, { color: theme.text }]}>{item.name}</Text>
-      <Text style={[styles.expenseAmount, { color: theme.text }]}>{item.amount}</Text>
-    </View>
-  );
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <View style={styles.headerControls}>
-        <TouchableOpacity
-          style={styles.languageButton}
-          onPress={() => setLanguage(language === 'vi' ? 'en' : 'vi')}
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.headerProfile}
+          onPress={() => navigation.navigate('User')}
         >
-          <Text>{language === 'vi' ? '🇻🇳' : '🇺🇸'}</Text>
-          <Text style={[styles.languageText, { color: theme.text }]}> {language.toUpperCase()} </Text>
+          <Text style={[styles.headerName, { color: theme.text }]}>
+            {userName.toUpperCase()}
+          </Text>
         </TouchableOpacity>
-
-        <TouchableOpacity style={styles.themeButton} onPress={() => setIsDarkMode(!isDarkMode)}>
-          <Ionicons
-            name={isDarkMode ? 'moon' : 'sunny'}
-            size={20}
-            color={theme.text}
+        <TouchableOpacity onPress={() => navigation.navigate('User')}>
+          <Image
+            source={require('../assets/avatar-placeholder.png')}
+            style={styles.avatar}
           />
         </TouchableOpacity>
       </View>
 
-      <Text style={[styles.greeting, { color: theme.text }]}> {t.welcome}, {username}! </Text>
-
-      {/* <Image
-        source={require('../assets/Logomark_Full_Color.png')} // File phải nằm trong /src/assets
+      {/* Logo */}
+      <Image
+        source={require('../assets/firebase_logo.png')}
         style={styles.logo}
         resizeMode="contain"
-      /> */}
+      />
 
-      <Text style={[styles.title, { color: theme.text }]}>{t.expenses}</Text>
-
-      <View style={styles.buttonBar}>
-        <TouchableOpacity
-          style={[styles.buttonBarItem, { backgroundColor: theme.button }]}
-          onPress={() => navigation.navigate('AddExpense')}
-        >
-          <Text style={[styles.buttonBarText, { color: theme.buttonText }]}>{t.addExpense}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.buttonBarItem, { backgroundColor: theme.button }]}
-          onPress={() => alert('Filter expenses')}
-        >
-          <Text style={[styles.buttonBarText, { color: theme.buttonText }]}>{t.filter}</Text>
+      {/* Danh sách thu chi */}
+      <View style={styles.sectionHeader}>
+        <Text style={[styles.sectionTitle, { color: theme.text }]}>
+          Danh sách thu chi
+        </Text>
+        <TouchableOpacity onPress={() => navigation.navigate('AddService')}>
+          <Ionicons name="add-circle" size={28} color={theme.text} />
         </TouchableOpacity>
       </View>
 
-      <FlatList
-        data={expenses}
-        renderItem={renderExpenseItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.expenseList}
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color={theme.text} />
+      ) : transactions.length === 0 ? (
+        <Text style={[styles.noTransactions, { color: theme.text }]}>
+          Không có giao dịch nào.
+        </Text>
+      ) : (
+        <FlatList
+          data={transactions}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View style={[styles.card, { backgroundColor: theme.cardBackground }]}>
+              <View>
+                <Text style={[styles.cardText, { color: theme.text }]}>
+                  {item.name}
+                </Text>
+                <Text style={[styles.cardDate, { color: theme.text }]}>
+                  {item.date}
+                </Text>
+              </View>
+              <Text style={[styles.cardAmount, { color: item.type === 'income' ? 'green' : 'red' }]}>
+                {item.type === 'income' ? '+' : '-'}${item.amount}
+              </Text>
+            </View>
+          )}
+        />
+      )}
     </View>
   );
 };
@@ -128,85 +153,72 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
+    padding: 20,
   },
-  headerControls: {
-    position: 'absolute',
-    top: 40,
-    right: 20,
+  header: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: 15,
+    marginTop: 40,
+    marginBottom: 20,
   },
-  languageButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    padding: 8,
-    borderRadius: 8,
-    gap: 5,
-  },
-  languageText: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  themeButton: {
-    padding: 8,
-    borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  greeting: {
-    fontSize: 24,
+  headerName: {
+    fontSize: 20,
     fontWeight: 'bold',
-    marginTop: 80,
-    marginBottom: 10,
-    textAlign: 'center',
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
   logo: {
-    width: 180,
-    height: 80,
+    width: 120,
+    height: 40,
     alignSelf: 'center',
     marginBottom: 20,
   },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginVertical: 16,
-    textAlign: 'center',
-  },
-  buttonBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 16,
-  },
-  buttonBarItem: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  buttonBarText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  expenseList: {
-    paddingBottom: 20,
-  },
-  expenseItem: {
+  sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 16,
-    borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 10,
+    alignItems: 'center',
+    marginBottom: 15,
   },
-  expenseName: {
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  card: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 15,
+    marginBottom: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
+  },
+  cardText: {
     fontSize: 16,
     fontWeight: '500',
   },
-  expenseAmount: {
+  cardDate: {
+    fontSize: 12,
+    marginTop: 4,
+    opacity: 0.7,
+  },
+  cardAmount: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
+  },
+  noTransactions: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 16,
+    opacity: 0.7,
+  },
+  headerProfile: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });
 

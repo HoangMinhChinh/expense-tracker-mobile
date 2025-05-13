@@ -6,17 +6,8 @@ import SignupScreen from '../screens/auth/SignupScreen';
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
 import MainTabNavigator from './MainTabNavigator';
 import { AuthContext } from '../context/AuthContext';
-import AddExpenseScreen from '../screens/AddExpenseScreen';
 
-export type RootStackParamList = {
-  Login: undefined;
-  Signup: undefined;
-  ForgotPassword: undefined;
-  MainTab: undefined;
-  AddExpense: undefined;
-};
-
-const Stack = createNativeStackNavigator<RootStackParamList>();
+const Stack = createNativeStackNavigator();
 
 const AuthStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -29,7 +20,6 @@ const AuthStack = () => (
 const AppStack = () => (
   <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="MainTab" component={MainTabNavigator} />
-    <Stack.Screen name="AddExpense" component={AddExpenseScreen} />
   </Stack.Navigator>
 );
 
