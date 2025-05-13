@@ -1,10 +1,12 @@
 import React, { useContext } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+
 import LoginScreen from '../screens/auth/LoginScreen';
 import SignupScreen from '../screens/auth/SignupScreen';
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
-import UserScreen from '../screens/UserScreen';
+import Buttonbar from '../navigation/ButtonBar';
+
 import { AuthContext } from '../context/AuthContext';
 
 const Stack = createNativeStackNavigator();
@@ -18,8 +20,9 @@ const AuthStack = () => (
 );
 
 const AppStack = () => (
-  <Stack.Navigator>
-      <Stack.Screen name="User" component={UserScreen} />
+  <Stack.Navigator screenOptions={{ headerShown: false }}>
+    {/* MainTab là nơi chứa các tab như Home, User... */}
+    <Stack.Screen name="ButtonBar" component={Buttonbar} />
   </Stack.Navigator>
 );
 
