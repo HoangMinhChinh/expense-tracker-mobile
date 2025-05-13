@@ -15,26 +15,25 @@ import { auth } from '../../config/firebaseConfig';
 import { ref, set } from 'firebase/database';
 import { db } from '../../config/firebaseConfig';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { translations } from '../../style/translations'; // Import trực tiếp
-import { lightTheme, darkTheme } from '../../style/theme'; // Import trực tiếp
+import { useLanguage } from '../../context/LanguageContext';
+import { useTheme } from '../../context/ThemeContext';
+import { lightTheme, darkTheme } from '../../style/theme';
 
 type RootStackParamList = {
   Login: undefined;
   Signup: undefined;
-  ForgotPassword: undefined;
 };
 type Props = NativeStackScreenProps<RootStackParamList>;
 
 const SignupScreen: React.FC<Props> = ({ navigation }) => {
-  const [language, setLanguage] = useState<'vi' | 'en'>('vi');
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { isDarkMode, toggleTheme } = useTheme();
+  const { language, setLanguage, t } = useLanguage();
   const [errorState, setErrorState] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const theme = isDarkMode ? darkTheme : lightTheme;
-  const t = translations[language];
 
   const SignupSchema = Yup.object().shape({
     email: Yup.string().email(t.invalidEmail).required(t.required),
@@ -60,16 +59,23 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
   const handleSignup = async (values: { email: string; password: string; confirmPassword: string }) => {
     setIsLoading(true);
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+      // Tạo tài khoản với Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(
+        auth, 
+        values.email, 
+        values.password
+      );
       const user = userCredential.user;
 
+      // Tạo node cho user trong Realtime Database
       const userRef = ref(db, 'users/' + user.uid);
       await set(userRef, {
         email: values.email,
         createdAt: new Date().toISOString(),
       });
 
-      // Không gọi navigation.navigate, để AuthContext tự chuyển stack
+      // Chuyển đến màn hình User để điền thông tin
+      navigation.navigate('User');
     } catch (error: any) {
       setErrorState(getFriendlyErrorMessage(error));
     } finally {
@@ -79,6 +85,7 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
+      {/* Header Controls */}
       <View style={styles.headerControls}>
         <TouchableOpacity
           style={styles.languageButton}
@@ -90,7 +97,7 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.themeButton} onPress={() => setIsDarkMode(!isDarkMode)}>
+        <TouchableOpacity style={styles.themeButton} onPress={toggleTheme}>
           <Ionicons
             name={isDarkMode ? 'moon' : 'sunny'}
             size={20}
@@ -99,12 +106,14 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
+      {/* Logo */}
       <Image
-        source={require('../../assets/Logomark_Full_Color.png')}
+        source={require('../../assets/Logomark_Full Color.png')}
         style={styles.logo}
         resizeMode="contain"
       />
 
+      {/* Formik Form */}
       <Formik
         initialValues={{ email: '', password: '', confirmPassword: '' }}
         validationSchema={SignupSchema}
@@ -112,8 +121,10 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
       >
         {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
           <View>
-            {errorState && <Text style={[styles.error, { color: theme.error }]}>{errorState}</Text>}
+            {/* Error State */}
+            {errorState && <Text style={styles.error}>{errorState}</Text>}
 
+            {/* Email Input */}
             <View style={[styles.inputWrapper, { borderColor: theme.border, backgroundColor: theme.inputBg }]}>
               <Ionicons name="mail-outline" size={20} style={styles.icon} color={theme.placeholder} />
               <TextInput
@@ -126,8 +137,9 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
                 value={values.email}
               />
             </View>
-            {touched.email && errors.email && <Text style={[styles.error, { color: theme.error }]}>{errors.email}</Text>}
+            {touched.email && errors.email && <Text style={styles.error}>{errors.email}</Text>}
 
+            {/* Password Input */}
             <View style={[styles.inputWrapper, { borderColor: theme.border, backgroundColor: theme.inputBg }]}>
               <Ionicons name="lock-closed-outline" size={20} style={styles.icon} color={theme.placeholder} />
               <TextInput
@@ -148,8 +160,9 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
                 />
               </TouchableOpacity>
             </View>
-            {touched.password && errors.password && <Text style={[styles.error, { color: theme.error }]}>{errors.password}</Text>}
+            {touched.password && errors.password && <Text style={styles.error}>{errors.password}</Text>}
 
+            {/* Confirm Password Input */}
             <View style={[styles.inputWrapper, { borderColor: theme.border, backgroundColor: theme.inputBg }]}>
               <Ionicons name="lock-closed-outline" size={20} style={styles.icon} color={theme.placeholder} />
               <TextInput
@@ -171,9 +184,10 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
               </TouchableOpacity>
             </View>
             {touched.confirmPassword && errors.confirmPassword && (
-              <Text style={[styles.error, { color: theme.error }]}>{errors.confirmPassword}</Text>
+              <Text style={styles.error}>{errors.confirmPassword}</Text>
             )}
 
+            {/* Signup Button */}
             <TouchableOpacity
               testID="signup-button"
               style={[styles.loginButton, { backgroundColor: theme.button }]}
@@ -185,6 +199,7 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
               </Text>
             </TouchableOpacity>
 
+            {/* Link to Login */}
             <View style={styles.linkContainer}>
               <Text style={styles.link} onPress={() => navigation.navigate('Login')}>
                 {t.login}
@@ -249,7 +264,11 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
   },
+  icon: {
+    marginRight: 8,
+  },
   error: {
+    color: 'red',
     marginBottom: 10,
     marginLeft: 4,
   },
