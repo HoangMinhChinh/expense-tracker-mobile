@@ -1,5 +1,17 @@
 // theme.ts
-export const lightTheme = {
+interface Theme {
+  background: string;
+  text: string;
+  inputBg: string;
+  inputText: string;
+  placeholder: string;
+  border: string;
+  button: string;
+  buttonText: string;
+  cardBackground: string;
+}
+
+export const lightTheme: Theme = {
   background: '#f9f9f9',
   text: '#000',
   inputBg: '#fff',
@@ -8,15 +20,17 @@ export const lightTheme = {
   border: '#ccc',
   button: '#007bff',
   buttonText: '#fff',
+  cardBackground: '#fff'
 };
 
-export const darkTheme = {
-  background: '#121212',
+export const darkTheme: Theme = {
+  background: '#2d2d2d',
   text: '#fff',
-  inputBg: '#1e1e1e',
+  inputBg: '#3d3d3d',
   inputText: '#fff',
   placeholder: '#aaa',
   border: '#555',
-  button: '#444',
+  button: '#0056b3',
   buttonText: '#fff',
+  cardBackground: '#3d3d3d'
 };

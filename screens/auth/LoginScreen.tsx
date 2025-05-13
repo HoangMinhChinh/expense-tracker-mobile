@@ -1,12 +1,8 @@
+// File chỉnh sửa lại theo yêu cầu
 import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
+  View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Image
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Formik } from 'formik';

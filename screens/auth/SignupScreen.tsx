@@ -12,6 +12,8 @@ import * as Yup from 'yup';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../config/firebaseConfig';
+import { ref, set } from 'firebase/database';
+import { db } from '../../config/firebaseConfig';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -57,8 +59,23 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
   const handleSignup = async (values: { email: string; password: string; confirmPassword: string }) => {
     setIsLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, values.email, values.password);
-      navigation.navigate('Login');
+      // Tạo tài khoản với Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(
+        auth, 
+        values.email, 
+        values.password
+      );
+      const user = userCredential.user;
+
+      // Tạo node cho user trong Realtime Database
+      const userRef = ref(db, 'users/' + user.uid);
+      await set(userRef, {
+        email: values.email,
+        createdAt: new Date().toISOString(),
+      });
+
+      // Chuyển đến màn hình User để điền thông tin
+      navigation.navigate('User');
     } catch (error: any) {
       setErrorState(getFriendlyErrorMessage(error));
     } finally {
@@ -239,6 +256,9 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 10,
     paddingHorizontal: 10,
+  },
+  icon: {
+    marginRight: 8,
   },
   inputFlex: {
     flex: 1,
