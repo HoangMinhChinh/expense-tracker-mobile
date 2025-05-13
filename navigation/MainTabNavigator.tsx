@@ -6,7 +6,7 @@ import HomeScreen from '../screens/HomeScreen';
 import ExpenseScreen from '../screens/ExpenseScreen';
 import StatsScreen from '../screens/StatsScreen';
 import UserScreen from '../screens/UserScreen';
-import AddServiceScreen from '../screens/thu chi/AddServiceScreen';
+import AddServiceScreen from '../screens/AddServiceScreen';
 
 const Tab = createBottomTabNavigator();
 

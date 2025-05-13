@@ -1,6 +1,13 @@
+// src/screens/HomeScreen.tsx
 import React, { useEffect, useState } from 'react';
 import {
-  View, Text, Image, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { auth, db } from '../config/firebaseConfig';
@@ -8,11 +15,12 @@ import { ref, get, query, orderByChild, equalTo } from 'firebase/database';
 import { useTheme } from '../context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useIsFocused } from '@react-navigation/native';
 
-type RootStackParamList = {
+export type RootStackParamList = {
   Home: undefined;
   User: undefined;
-  AddService: undefined;
+  AddService: { onAddSuccess: () => void };
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -32,61 +40,75 @@ const HomeScreen = () => {
   const [transactions, setTransactions] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch user data and transactions
-  useEffect(() => {
-    const fetchData = async () => {
-      const user = auth.currentUser;
-      if (!user) return;
+  const isFocused = useIsFocused();
 
-      try {
-        // Fetch user name from Realtime Database
-        const userRef = ref(db, 'users/' + user.uid);
-        const userSnapshot = await get(userRef);
-        if (userSnapshot.exists()) {
-          setUserName(userSnapshot.val().fullName || 'Người dùng');
-        }
+  const fetchData = async () => {
+    const user = auth.currentUser;
+    if (!user) return;
 
-        // Fetch transactions from Realtime Database
-        const transactionsRef = ref(db, 'transactions');
-        const userTransactionsQuery = query(
-          transactionsRef,
-          orderByChild('userId'),
-          equalTo(user.uid)
-        );
-
-        const transactionSnapshot = await get(userTransactionsQuery);
-        const fetchedTransactions: Expense[] = [];
-
-        if (transactionSnapshot.exists()) {
-          transactionSnapshot.forEach((childSnapshot) => {
-            fetchedTransactions.push({
-              id: childSnapshot.key,
-              ...childSnapshot.val()
-            });
-          });
-        }
-
-        // Sắp xếp theo ngày mới nhất
-        fetchedTransactions.sort((a, b) => 
-          new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
-
-        setTransactions(fetchedTransactions);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
+    try {
+      // Fetch user data
+      const userRef = ref(db, 'users/' + user.uid);
+      const userSnapshot = await get(userRef);
+      if (userSnapshot.exists()) {
+        setUserName(userSnapshot.val().fullName || 'Người dùng');
       }
-    };
 
-    fetchData();
-  }, []);
+      // Fetch transactions
+      const transactionsRef = ref(db, 'transactions');
+      const userTransactionsQuery = query(
+        transactionsRef,
+        orderByChild('userId'),
+        equalTo(user.uid)
+      );
+
+      const transactionSnapshot = await get(userTransactionsQuery);
+      const fetchedTransactions: Expense[] = [];
+
+      if (transactionSnapshot.exists()) {
+        transactionSnapshot.forEach((childSnapshot) => {
+          fetchedTransactions.push({
+            id: childSnapshot.key!,
+            ...childSnapshot.val(),
+          });
+        });
+      }
+
+      fetchedTransactions.sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+
+      setTransactions(fetchedTransactions);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isFocused) {
+      fetchData();
+    }
+  }, [isFocused]);
+
+  // Callback khi thêm giao dịch thành công
+  const handleAddSuccess = () => {
+    fetchData(); // Refresh danh sách giao dịch
+  };
+
+  // Mở modal AddServiceScreen
+  const openAddServiceModal = () => {
+    navigation.navigate('AddService', {
+      onAddSuccess: handleAddSuccess,
+    });
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.headerProfile}
           onPress={() => navigation.navigate('User')}
         >
@@ -114,7 +136,7 @@ const HomeScreen = () => {
         <Text style={[styles.sectionTitle, { color: theme.text }]}>
           Danh sách thu chi
         </Text>
-        <TouchableOpacity onPress={() => navigation.navigate('AddService')}>
+        <TouchableOpacity onPress={openAddServiceModal}>
           <Ionicons name="add-circle" size={28} color={theme.text} />
         </TouchableOpacity>
       </View>
@@ -139,7 +161,12 @@ const HomeScreen = () => {
                   {item.date}
                 </Text>
               </View>
-              <Text style={[styles.cardAmount, { color: item.type === 'income' ? 'green' : 'red' }]}>
+              <Text
+                style={[
+                  styles.cardAmount,
+                  { color: item.type === 'income' ? 'green' : 'red' },
+                ]}
+              >
                 {item.type === 'income' ? '+' : '-'}${item.amount}
               </Text>
             </View>
