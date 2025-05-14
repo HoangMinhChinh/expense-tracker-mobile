@@ -6,7 +6,7 @@ import HomeScreen from '../screens/HomeScreen';
 import ExpenseScreen from '../screens/ExpenseScreen';
 import StatsScreen from '../screens/StatsScreen';
 import UserScreen from '../screens/UserScreen';
-import AddServiceScreen from '../screens/AddServiceScreen';
+import AddServiceScreen from '../screens/AddServiceModal';
 
 const Tab = createBottomTabNavigator();
 
@@ -24,12 +24,15 @@ const MainTabNavigator = () => {
               break;
             case 'Expenses':
               iconName = focused ? 'wallet' : 'wallet-outline';
+              //Tài khoản - chi tiêu
               break;
             case 'Stats':
               iconName = focused ? 'stats-chart' : 'stats-chart-outline';
+              //báo cáo -startstart
               break;
             case 'Profile':
               iconName = focused ? 'person' : 'person-outline';
+              //setting - cài đặtđặt
               break;
             default:
               iconName = 'help-outline';

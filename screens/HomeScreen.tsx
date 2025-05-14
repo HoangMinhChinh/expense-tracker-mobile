@@ -16,11 +16,11 @@ import { useTheme } from '../context/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useIsFocused } from '@react-navigation/native';
+import AddServiceModal from '../screens/AddServiceModal';
 
 export type RootStackParamList = {
   Home: undefined;
   User: undefined;
-  AddService: { onAddSuccess: () => void };
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -39,6 +39,9 @@ const HomeScreen = () => {
   const [userName, setUserName] = useState('Người dùng');
   const [transactions, setTransactions] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState<Expense | null>(null);
 
   const isFocused = useIsFocused();
 
@@ -47,14 +50,12 @@ const HomeScreen = () => {
     if (!user) return;
 
     try {
-      // Fetch user data
       const userRef = ref(db, 'users/' + user.uid);
       const userSnapshot = await get(userRef);
       if (userSnapshot.exists()) {
         setUserName(userSnapshot.val().fullName || 'Người dùng');
       }
 
-      // Fetch transactions
       const transactionsRef = ref(db, 'transactions');
       const userTransactionsQuery = query(
         transactionsRef,
@@ -92,16 +93,16 @@ const HomeScreen = () => {
     }
   }, [isFocused]);
 
-  // Callback khi thêm giao dịch thành công
-  const handleAddSuccess = () => {
-    fetchData(); // Refresh danh sách giao dịch
+  const openAddModal = () => {
+    setEditMode(false);
+    setSelectedTransaction(null);
+    setModalVisible(true);
   };
 
-  // Mở modal AddServiceScreen
-  const openAddServiceModal = () => {
-    navigation.navigate('AddService', {
-      onAddSuccess: handleAddSuccess,
-    });
+  const openEditModal = (item: Expense) => {
+    setEditMode(true);
+    setSelectedTransaction(item);
+    setModalVisible(true);
   };
 
   return (
@@ -136,7 +137,7 @@ const HomeScreen = () => {
         <Text style={[styles.sectionTitle, { color: theme.text }]}>
           Danh sách thu chi
         </Text>
-        <TouchableOpacity onPress={openAddServiceModal}>
+        <TouchableOpacity onPress={openAddModal}>
           <Ionicons name="add-circle" size={28} color={theme.text} />
         </TouchableOpacity>
       </View>
@@ -152,7 +153,10 @@ const HomeScreen = () => {
           data={transactions}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <View style={[styles.card, { backgroundColor: theme.cardBackground }]}>
+            <TouchableOpacity
+              onPress={() => openEditModal(item)}
+              style={[styles.card, { backgroundColor: theme.cardBackground }]}
+            >
               <View>
                 <Text style={[styles.cardText, { color: theme.text }]}>
                   {item.name}
@@ -167,12 +171,21 @@ const HomeScreen = () => {
                   { color: item.type === 'income' ? 'green' : 'red' },
                 ]}
               >
-                {item.type === 'income' ? '+' : '-'}${item.amount}
+                {item.type === 'income' ? '+' : '-'}{item.amount} vnd
               </Text>
-            </View>
+            </TouchableOpacity>
           )}
         />
       )}
+
+      {/* Modal thêm/sửa giao dịch */}
+      <AddServiceModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSuccess={fetchData}
+        editMode={editMode}
+        transaction={selectedTransaction}
+      />
     </View>
   );
 };
