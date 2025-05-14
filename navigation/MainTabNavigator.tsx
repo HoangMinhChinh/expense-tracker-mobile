@@ -32,7 +32,7 @@ const MainTabNavigator = () => {
               break;
             case 'Profile':
               iconName = focused ? 'person' : 'person-outline';
-              //setting - cài đặtđặt
+              //setting - cài đặt
               break;
             default:
               iconName = 'help-outline';
@@ -69,3 +69,6 @@ const MainTabNavigator = () => {
 };
 
 export default MainTabNavigator;
+
+// chỉnh lại thanh text chồng lên trên icon
+// đồng bộ darkmode 

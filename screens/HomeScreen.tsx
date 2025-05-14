@@ -105,6 +105,17 @@ const HomeScreen = () => {
     setModalVisible(true);
   };
 
+  // Hàm định dạng thời gian
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0'); // Lấy ngày, thêm số 0 nếu cần
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Lấy tháng (bắt đầu từ 0 nên +1)
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       {/* Header */}
@@ -162,7 +173,7 @@ const HomeScreen = () => {
                   {item.name}
                 </Text>
                 <Text style={[styles.cardDate, { color: theme.text }]}>
-                  {item.date}
+                  {formatDate(item.date)}
                 </Text>
               </View>
               <Text
@@ -171,7 +182,7 @@ const HomeScreen = () => {
                   { color: item.type === 'income' ? 'green' : 'red' },
                 ]}
               >
-                {item.type === 'income' ? '+' : '-'}{item.amount} vnd
+                {item.type === 'income' ? '+' : '-'}{item.amount.toLocaleString('vi-VN')} vnd
               </Text>
             </TouchableOpacity>
           )}

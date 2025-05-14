@@ -26,3 +26,6 @@ const styles = StyleSheet.create({
 });
 
 export default StatsScreen;
+
+//  đổi lại thành setting
+// thêm các chức năng như đổi ngôn ngữ, đổi màu theme, đổi mật khẩu, đăng xuất

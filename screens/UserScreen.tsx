@@ -165,6 +165,7 @@ const UserScreen = () => {
         onChangeText={(text) => setUserData({ ...userData, gender: text })}
         style={[styles.input, { color: theme.text, backgroundColor: theme.inputBg }]}
         placeholderTextColor={theme.placeholder}
+        // chỉnh thành chỉ nam hoặc nữ
       />
 
       <TouchableOpacity style={styles.button} onPress={handleSave}>
@@ -173,10 +174,13 @@ const UserScreen = () => {
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Đăng xuất</Text>
+        {/* chỉnh thành nút back to homehome */}
       </TouchableOpacity>
     </ScrollView>
   );
 };
+// chỉnh lại 3 ô tên tuổi giới tính
+// thêm icon ở 3 ô đóđó
 
 const styles = StyleSheet.create({
   container: {
