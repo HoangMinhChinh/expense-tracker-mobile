@@ -14,31 +14,32 @@ export type RootStackParamList = {
   Signup: undefined;
   ForgotPassword: undefined;
   MainTab: undefined;
-  Home: undefined;
   User: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+const AuthStack = () => (
+  <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Screen name="Login" component={LoginScreen} />
+    <Stack.Screen name="Signup" component={SignupScreen} />
+    <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+  </Stack.Navigator>
+);
+
+const AppStack = () => (
+  <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Screen name="MainTab" component={MainTabNavigator} />
+    <Stack.Screen name="User" component={UserScreen} />
+  </Stack.Navigator>
+);
 
 const RootNavigator = () => {
   const { user } = useContext(AuthContext);
 
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {user ? (
-          <>
-            <Stack.Screen name="MainTab" component={MainTabNavigator} />
-            <Stack.Screen name="User" component={UserScreen} />
-          </>
-        ) : (
-          <>
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Signup" component={SignupScreen} />
-            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-          </>
-        )}
-      </Stack.Navigator>
+      {user ? <AppStack /> : <AuthStack />}
     </NavigationContainer>
   );
 };

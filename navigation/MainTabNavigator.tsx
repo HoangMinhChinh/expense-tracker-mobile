@@ -2,24 +2,34 @@ import React from 'react';
 import { Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+
 import HomeScreen from '../screens/HomeScreen';
 import ExpenseScreen from '../screens/ExpenseScreen';
 import StatsScreen from '../screens/StatsScreen';
-import SettingsScreen from '../screens/SettingScreen'; // ✅ Đổi sang SettingsScreen
-import AddServiceScreen from '../screens/AddServiceModal';
+import SettingsScreen from '../screens/SettingScreen';
+import AddServiceModal from '../screens/AddServiceModal';
+
 import { useTheme } from '../context/ThemeContext';
 
-const Tab = createBottomTabNavigator();
+export type MainTabParamList = {
+  Home: undefined;
+  'Lịch': undefined;
+  'Báo cáo': undefined;
+  'Cài đặt': undefined;
+  AddService: undefined;
+};
+
+const Tab = createBottomTabNavigator<MainTabParamList>();
 
 const MainTabNavigator = () => {
-  const { isDarkMode, theme } = useTheme();
+  const { theme } = useTheme();
 
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName = '';
+          let iconName: string = '';
 
           switch (route.name) {
             case 'Home':
@@ -35,7 +45,7 @@ const MainTabNavigator = () => {
               iconName = focused ? 'settings' : 'settings-outline';
               break;
             default:
-              iconName = 'help-outline';
+              iconName = 'help-circle-outline';
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
@@ -60,10 +70,10 @@ const MainTabNavigator = () => {
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Lịch" component={ExpenseScreen} />
       <Tab.Screen name="Báo cáo" component={StatsScreen} />
-      <Tab.Screen name="Cài đặt" component={SettingsScreen} /> {/* ✅ */}
+      <Tab.Screen name="Cài đặt" component={SettingsScreen} />
       <Tab.Screen
         name="AddService"
-        component={AddServiceScreen}
+        component={AddServiceModal}
         options={{
           tabBarButton: () => null,
           tabBarStyle: { display: 'none' },

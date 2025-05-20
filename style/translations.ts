@@ -4,6 +4,7 @@ export const translations = {
     // đăng ký // đăng nhập
     email: 'Email',
     password: 'Mật khẩu',
+    newPassword: 'Mật khẩu mới',
     confirmPassword: 'Xác nhận mật khẩu',
     login: 'Đăng nhập',
     signup: 'Đăng ký',
@@ -28,6 +29,7 @@ export const translations = {
 
     darkMode: 'Chế độ tối',
     language: 'Ngôn ngữ',
+    settings: 'Cài đặt', // Added key for Vietnamese
 
     genericError: 'Đã xảy ra lỗi. Vui lòng thử lại sau.',
     loading: 'Đang xử lý...',
@@ -49,16 +51,18 @@ export const translations = {
     amountLabel: 'Số tiền',
     cancel: 'Hủy',
     addService: 'Thêm dịch vụ',
-    // filtermodall
+    // filtermodal
     fromDate: 'Từ ngày',
     toDate: 'Đến ngày',
     keyword: 'Từ khóa',
-    all: 'Tất cả', // Thêm key này
-    apply: 'Áp dụng', // Thêm key này
+    all: 'Tất cả',
+    apply: 'Áp dụng',
+    changepassword: 'Đổi mật khẩu',
   },
   en: {
     email: 'Email',
     password: 'Password',
+    newPassword: 'New Password',
     confirmPassword: 'Confirm password',
     login: 'Login',
     signup: 'Sign up',
@@ -78,6 +82,7 @@ export const translations = {
     passwordMismatch: 'Passwords do not match',
     darkMode: 'Dark Mode',
     language: 'Language',
+    settings: 'Settings', // Added key for English
     passwordTooShort: 'Password must be at least 6 characters',
     emailAlreadyInUse: 'Email is already in use',
     weakPassword: 'Password is too weak',
@@ -101,11 +106,12 @@ export const translations = {
     amountLabel: 'Amount',
     cancel: 'Cancel',
     addService: 'Add Service',
-    // filtermodalfiltermodal
+    // filtermodal
     fromDate: 'From Date',
     toDate: 'To Date',
     keyword: 'Keyword',
-    all: 'All', 
-    apply: 'Apply', 
+    all: 'All',
+    apply: 'Apply',
+    changepassword: 'Change Password',
   },
 };

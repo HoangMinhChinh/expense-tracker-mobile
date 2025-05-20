@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,20 +7,24 @@ import {
   Switch,
   Alert,
 } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigation/RootNavigator'; // đường dẫn đúng
+import { RootStackParamList } from '../navigation/RootNavigator';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { signOut } from 'firebase/auth';
 import { auth } from '../config/firebaseConfig';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import ChangePassModal from '../screens/auth/ChangePassModal';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
 const SettingsScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const { theme, isDarkMode, toggleTheme } = useTheme();
   const { language, setLanguage, t } = useLanguage();
+
+  const [showChangePass, setShowChangePass] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -31,55 +35,86 @@ const SettingsScreen = () => {
   };
 
   const handleAppInfo = () => {
-    Alert.alert('Thông tin ứng dụng', 'Phiên bản 1.0.0\nDeveloper: Khoa');
-  };
-
-  const handleSetPin = async () => {
-    await AsyncStorage.setItem('app_pin', '123456'); // Tạm đặt cứng, có thể thay bằng modal sau
-    Alert.alert('✅', 'PIN đã được thiết lập (123456)');
+    Alert.alert('Thông tin ứng dụng', 'Phiên bản 1.0.0\nDeveloper: Dương');
   };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      {/* Thông tin cá nhân */}
-      <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('User')}>
-        <Text style={[styles.text, { color: theme.text }]}>👤 {t.fullName}</Text>
+      {/* Tiêu đề */}
+      <Text style={[styles.header, { color: theme.text }]}>{t.settings || 'Cài đặt'}</Text>
+
+      {/* Tài khoản */}
+      <TouchableOpacity
+        style={[styles.item, { backgroundColor: theme.inputBg || '#fff' }]}
+        onPress={() => navigation.navigate('User')}
+        activeOpacity={0.7}
+      >
+        <View style={styles.itemContent}>
+          <Ionicons name="person-outline" size={24} color={theme.text} style={styles.icon} />
+          <Text style={[styles.text, { color: theme.text }]}>{t.fullName}</Text>
+        </View>
       </TouchableOpacity>
 
-      {/* Dark mode */}
-      <View style={styles.item}>
-        <Text style={[styles.text, { color: theme.text }]}>🌙 {t.darkMode}</Text>
-        <Switch value={isDarkMode} onValueChange={toggleTheme} />
+      {/* Chế độ tối */}
+      <View style={[styles.item, { backgroundColor: theme.inputBg || '#fff' }]}>
+        <View style={styles.itemContent}>
+          <Ionicons name="moon-outline" size={24} color={theme.text} style={styles.icon} />
+          <Text style={[styles.text, { color: theme.text }]}>{t.darkMode}</Text>
+        </View>
+        <Switch value={isDarkMode} onValueChange={toggleTheme} thumbColor={isDarkMode ? '#fff' : '#f4f3f4'} trackColor={{ false: '#767577', true: '#81b0ff' }} />
       </View>
 
       {/* Đổi mật khẩu */}
-      <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('User')}>
-        <Text style={[styles.text, { color: theme.text }]}>🔒 {t.password || 'Đổi mật khẩu'}</Text>
-      </TouchableOpacity>
-
-      {/* Đổi ngôn ngữ */}
       <TouchableOpacity
-        style={styles.item}
-        onPress={() => setLanguage(language === 'vi' ? 'en' : 'vi')}
+        style={[styles.item, { backgroundColor: theme.inputBg || '#fff' }]}
+        onPress={() => setShowChangePass(true)}
+        activeOpacity={0.7}
       >
-        <Text style={[styles.text, { color: theme.text }]}>🌐 {t.language}</Text>
-        <Text style={[styles.text, { color: theme.text }]}>{language.toUpperCase()}</Text>
+        <View style={styles.itemContent}>
+          <Ionicons name="lock-closed-outline" size={24} color={theme.text} style={styles.icon} />
+          <Text style={[styles.text, { color: theme.text }]}>{t.changepassword || 'Đổi mật khẩu'}</Text>
+        </View>
       </TouchableOpacity>
 
-      {/* Lớp khóa sau đăng nhập */}
-      <TouchableOpacity style={styles.item} onPress={handleSetPin}>
-        <Text style={[styles.text, { color: theme.text }]}>🔐 Lớp khóa sau đăng nhập</Text>
+      {/* Ngôn ngữ */}
+      <TouchableOpacity
+        style={[styles.item, { backgroundColor: theme.inputBg || '#fff' }]}
+        onPress={() => setLanguage(language === 'vi' ? 'en' : 'vi')}
+        activeOpacity={0.7}
+      >
+        <View style={styles.itemContent}>
+          <Ionicons name="language-outline" size={24} color={theme.text} style={styles.icon} />
+          <Text style={[styles.text, { color: theme.text }]}>{t.language}</Text>
+        </View>
+        <Text style={[styles.subText, { color: theme.text }]}>{language.toUpperCase()}</Text>
       </TouchableOpacity>
 
       {/* Thông tin ứng dụng */}
-      <TouchableOpacity style={styles.item} onPress={handleAppInfo}>
-        <Text style={[styles.text, { color: theme.text }]}>ℹ️ Thông tin ứng dụng</Text>
+      <TouchableOpacity
+        style={[styles.item, { backgroundColor: theme.inputBg || '#fff' }]}
+        onPress={handleAppInfo}
+        activeOpacity={0.7}
+      >
+        <View style={styles.itemContent}>
+          <Ionicons name="information-circle-outline" size={24} color={theme.text} style={styles.icon} />
+          <Text style={[styles.text, { color: theme.text }]}>Thông tin ứng dụng</Text>
+        </View>
       </TouchableOpacity>
 
       {/* Đăng xuất */}
-      <TouchableOpacity style={styles.item} onPress={handleLogout}>
-        <Text style={[styles.text, { color: 'red' }]}>🚪 {t.logout}</Text>
+      <TouchableOpacity
+        style={[styles.item, styles.logoutItem, { backgroundColor: theme.inputBg || '#fff' }]}
+        onPress={handleLogout}
+        activeOpacity={0.7}
+      >
+        <View style={styles.itemContent}>
+          <Ionicons name="log-out-outline" size={24} color="red" style={styles.icon} />
+          <Text style={[styles.text, { color: 'red' }]}>{t.logout}</Text>
+        </View>
       </TouchableOpacity>
+
+      {/* Modal đổi mật khẩu */}
+      <ChangePassModal visible={showChangePass} onClose={() => setShowChangePass(false)} />
     </View>
   );
 };
@@ -87,18 +122,49 @@ const SettingsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 30, // Thêm paddingTop để có khoảng cách trên
+    marginBottom: 20, // Thêm khoảng cách dưới
+  },
+  header: {
+    fontSize: 28,
+    fontWeight: '700',
+    marginBottom: 20,
+    textAlign: 'center',
   },
   item: {
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderColor: '#ccc',
+    paddingVertical: 18, // Tăng từ 14 lên 18
+    paddingHorizontal: 16, // Thêm paddingHorizontal
+    borderRadius: 12, // Thêm borderRadius để bo góc
+    marginBottom: 10, // Thêm khoảng cách giữa các mục
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    elevation: 2, // Thêm bóng trên Android
+    shadowColor: '#000', // Thêm bóng trên iOS
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  logoutItem: {
+    borderWidth: 1,
+    borderColor: 'red', // Thêm viền đỏ cho mục Đăng xuất
+  },
+  itemContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  icon: {
+    marginRight: 12, // Khoảng cách giữa biểu tượng và văn bản
   },
   text: {
+    fontSize: 18, // Tăng từ 16 lên 18
+    fontWeight: '500',
+  },
+  subText: {
     fontSize: 16,
+    fontWeight: '500',
+    paddingHorizontal: 10, // Thêm padding cho ngôn ngữ
   },
 });
 
