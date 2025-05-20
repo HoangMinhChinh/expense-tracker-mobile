@@ -26,11 +26,9 @@ export const translations = {
     female: 'Nữ',
     changeAvatar: '📸 Đổi ảnh',
     save: 'Lưu thông tin',
-
     darkMode: 'Chế độ tối',
     language: 'Ngôn ngữ',
-    settings: 'Cài đặt', // Added key for Vietnamese
-
+    settings: 'Cài đặt',
     genericError: 'Đã xảy ra lỗi. Vui lòng thử lại sau.',
     loading: 'Đang xử lý...',
     userNotFound: 'Không tìm thấy người dùng với email này',
@@ -58,6 +56,11 @@ export const translations = {
     all: 'Tất cả',
     apply: 'Áp dụng',
     changepassword: 'Đổi mật khẩu',
+    total: 'Tổng',
+    noData: 'Không có dữ liệu', // Thêm khóa noData
+    error: 'Lỗi', // Thêm cho AddServiceModal
+    confirmDelete: 'Xác nhận xóa', // Thêm cho AddServiceModal
+    deleteTransactionConfirm: 'Bạn có chắc muốn xóa giao dịch này?', // Thêm cho AddServiceModal
   },
   en: {
     email: 'Email',
@@ -82,7 +85,7 @@ export const translations = {
     passwordMismatch: 'Passwords do not match',
     darkMode: 'Dark Mode',
     language: 'Language',
-    settings: 'Settings', // Added key for English
+    settings: 'Settings',
     passwordTooShort: 'Password must be at least 6 characters',
     emailAlreadyInUse: 'Email is already in use',
     weakPassword: 'Password is too weak',
@@ -113,5 +116,10 @@ export const translations = {
     all: 'All',
     apply: 'Apply',
     changepassword: 'Change Password',
+    total: 'Total',
+    noData: 'No data', // Thêm khóa noData
+    error: 'Error', // Thêm cho AddServiceModal
+    confirmDelete: 'Confirm Delete', // Thêm cho AddServiceModal
+    deleteTransactionConfirm: 'Are you sure you want to delete this transaction?', // Thêm cho AddServiceModal
   },
 };
