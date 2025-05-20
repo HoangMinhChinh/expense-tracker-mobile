@@ -8,12 +8,12 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  Platform,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { signOut } from 'firebase/auth';
 import { auth } from '../config/firebaseConfig';
 import { ref, get, set } from 'firebase/database';
 import { db } from '../config/firebaseConfig';
@@ -22,7 +22,6 @@ import { useLanguage } from '../context/LanguageContext';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-// ✅ Khai báo kiểu navigation chính xác
 type RootStackParamList = {
   Home: undefined;
   User: undefined;
@@ -47,14 +46,13 @@ const UserScreen = () => {
     const loadUserData = async () => {
       const user = auth.currentUser;
       if (!user) {
-        navigation.navigate('Login'); // ✅ Không còn báo lỗi TS
+        navigation.navigate('Login');
         return;
       }
 
       try {
         const userRef = ref(db, `users/${user.uid}`);
         const snapshot = await get(userRef);
-
         if (snapshot.exists()) {
           const data = snapshot.val();
           setUserData({
@@ -64,8 +62,8 @@ const UserScreen = () => {
             avatarUrl: data.avatarUrl || '',
           });
         }
-      } catch (error) {
-        Alert.alert('Lỗi', 'Không thể tải thông tin người dùng!');
+      } catch {
+        Alert.alert(t.genericError, t.loading);
       }
     };
 
@@ -84,13 +82,12 @@ const UserScreen = () => {
         const uri = result.assets[0].uri;
         const fileName = uri.split('/').pop() ?? `avatar_${Date.now()}.jpg`;
         const localUri = FileSystem.documentDirectory + fileName;
-
         await FileSystem.copyAsync({ from: uri, to: localUri });
         setUserData((prev) => ({ ...prev, avatarUrl: localUri }));
         await AsyncStorage.setItem('avatarUri', localUri);
       }
     } catch {
-      Alert.alert('Lỗi', 'Không thể chọn ảnh.');
+      Alert.alert(t.genericError, t.loading);
     }
   };
 
@@ -100,36 +97,34 @@ const UserScreen = () => {
     if (!user) return;
 
     if (!fullName.trim()) {
-      Alert.alert('Lỗi', 'Vui lòng nhập họ tên!');
+      Alert.alert(t.genericError, `${t.fullName} ${t.required.toLowerCase()}!`);
       return;
     }
 
     if (!age || isNaN(Number(age)) || Number(age) > 150) {
-      Alert.alert('Lỗi', 'Tuổi không hợp lệ!');
+      Alert.alert(t.genericError, `${t.age} không hợp lệ!`);
       return;
     }
 
-    if (!gender) {
-      Alert.alert('Lỗi', 'Vui lòng chọn giới tính!');
+    if (!gender || ![t.male.toLowerCase(), t.female.toLowerCase()].includes(gender.toLowerCase())) {
+      Alert.alert(t.genericError, `${t.gender} chỉ được chọn "${t.male}" hoặc "${t.female}"!`);
       return;
     }
 
     const userRef = ref(db, `users/${user.uid}`);
     await set(userRef, { fullName, age, gender, avatarUrl });
 
-    Alert.alert('Thành công', 'Đã lưu thông tin!');
-  };
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-    } catch {
-      Alert.alert('Lỗi', 'Không thể đăng xuất!');
-    }
+    Alert.alert('✅', t.save);
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: theme.background }]}>
+      {/* Nút quay lại */}
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Ionicons name="arrow-back" size={24} color={theme.text} />
+      </TouchableOpacity>
+
+      {/* Ảnh đại diện */}
       <TouchableOpacity onPress={pickImage}>
         <Image
           source={
@@ -139,54 +134,68 @@ const UserScreen = () => {
           }
           style={styles.avatar}
         />
-        <Text style={styles.linkText}>Chọn ảnh đại diện</Text>
+        <Text style={[styles.linkText, { color: theme.button }]}>{t.changeAvatar}</Text>
       </TouchableOpacity>
 
-      <TextInput
-        placeholder="Họ và tên"
-        value={userData.fullName}
-        onChangeText={(text) => setUserData({ ...userData, fullName: text })}
-        style={[styles.input, { color: theme.text, backgroundColor: theme.inputBg }]}
-        placeholderTextColor={theme.placeholder}
-      />
+      {/* Họ tên */}
+      <View style={[styles.inputGroup, { borderColor: theme.border, backgroundColor: theme.inputBg }]}>
+        <Ionicons name="person" size={20} color={theme.text} style={styles.icon} />
+        <TextInput
+          placeholder={t.fullName}
+          value={userData.fullName}
+          onChangeText={(text) => setUserData({ ...userData, fullName: text })}
+          style={[styles.input, { color: theme.inputText }]}
+          placeholderTextColor={theme.placeholder}
+        />
+      </View>
 
-      <TextInput
-        placeholder="Tuổi"
-        keyboardType="numeric"
-        value={userData.age}
-        onChangeText={(text) => setUserData({ ...userData, age: text })}
-        style={[styles.input, { color: theme.text, backgroundColor: theme.inputBg }]}
-        placeholderTextColor={theme.placeholder}
-      />
+      {/* Tuổi */}
+      <View style={[styles.inputGroup, { borderColor: theme.border, backgroundColor: theme.inputBg }]}>
+        <Ionicons name="calendar" size={20} color={theme.text} style={styles.icon} />
+        <TextInput
+          placeholder={t.age}
+          keyboardType="numeric"
+          value={userData.age}
+          onChangeText={(text) => setUserData({ ...userData, age: text })}
+          style={[styles.input, { color: theme.inputText }]}
+          placeholderTextColor={theme.placeholder}
+        />
+      </View>
 
-      <TextInput
-        placeholder="Giới tính (nam/nữ)"
-        value={userData.gender}
-        onChangeText={(text) => setUserData({ ...userData, gender: text })}
-        style={[styles.input, { color: theme.text, backgroundColor: theme.inputBg }]}
-        placeholderTextColor={theme.placeholder}
-        // chỉnh thành chỉ nam hoặc nữ
-      />
+      {/* Giới tính */}
+      <View style={[styles.inputGroup, { borderColor: theme.border, backgroundColor: theme.inputBg }]}>
+        <Ionicons name="transgender" size={20} color={theme.text} style={styles.icon} />
+        <TextInput
+          placeholder={`${t.gender} (${t.male}/${t.female})`}
+          value={userData.gender}
+          onChangeText={(text) => setUserData({ ...userData, gender: text })}
+          style={[styles.input, { color: theme.inputText }]}
+          placeholderTextColor={theme.placeholder}
+        />
+      </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleSave}>
-        <Text style={styles.buttonText}>Lưu thông tin</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Đăng xuất</Text>
-        {/* chỉnh thành nút back to homehome */}
+      {/* Nút lưu */}
+      <TouchableOpacity
+        style={[styles.button, { backgroundColor: theme.button }]}
+        onPress={handleSave}
+      >
+        <Text style={[styles.buttonText, { color: theme.buttonText }]}>{t.save}</Text>
       </TouchableOpacity>
     </ScrollView>
   );
 };
-// chỉnh lại 3 ô tên tuổi giới tính
-// thêm icon ở 3 ô đóđó
 
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     padding: 20,
-    paddingTop: 60,
+    paddingTop: Platform.OS === 'ios' ? 60 : 40,
+  },
+  backButton: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 40 : 20,
+    left: 20,
+    zIndex: 1,
   },
   avatar: {
     width: 120,
@@ -195,19 +204,27 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   linkText: {
-    color: '#007bff',
     marginBottom: 20,
+    fontWeight: '500',
   },
-  input: {
+  inputGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
     width: '100%',
     borderWidth: 1,
-    borderColor: '#ccc',
     borderRadius: 8,
-    padding: 12,
     marginBottom: 12,
+    paddingHorizontal: 10,
+  },
+  icon: {
+    marginRight: 8,
+  },
+  input: {
+    flex: 1,
+    paddingVertical: 10,
+    fontSize: 16,
   },
   button: {
-    backgroundColor: '#28a745',
     padding: 14,
     borderRadius: 8,
     width: '100%',
@@ -215,16 +232,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   buttonText: {
-    color: '#fff',
     fontWeight: '600',
-    fontSize: 16,
-  },
-  logoutButton: {
-    marginTop: 20,
-    padding: 10,
-  },
-  logoutText: {
-    color: 'red',
     fontSize: 16,
   },
 });

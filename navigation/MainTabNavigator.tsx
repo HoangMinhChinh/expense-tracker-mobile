@@ -1,38 +1,38 @@
 import React from 'react';
+import { Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import HomeScreen from '../screens/HomeScreen';
 import ExpenseScreen from '../screens/ExpenseScreen';
 import StatsScreen from '../screens/StatsScreen';
-import UserScreen from '../screens/UserScreen';
+import SettingsScreen from '../screens/SettingScreen'; // ✅ Đổi sang SettingsScreen
 import AddServiceScreen from '../screens/AddServiceModal';
+import { useTheme } from '../context/ThemeContext';
 
 const Tab = createBottomTabNavigator();
 
 const MainTabNavigator = () => {
+  const { isDarkMode, theme } = useTheme();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: string = '';
+          let iconName = '';
 
           switch (route.name) {
             case 'Home':
               iconName = focused ? 'home' : 'home-outline';
               break;
-            case 'Expenses':
-              iconName = focused ? 'wallet' : 'wallet-outline';
-              //Tài khoản - chi tiêu
+            case 'Lịch':
+              iconName = focused ? 'calendar' : 'calendar-outline';
               break;
-            case 'Stats':
+            case 'Báo cáo':
               iconName = focused ? 'stats-chart' : 'stats-chart-outline';
-              //báo cáo -startstart
               break;
-            case 'Profile':
-              iconName = focused ? 'person' : 'person-outline';
-              //setting - cài đặt
+            case 'Cài đặt':
+              iconName = focused ? 'settings' : 'settings-outline';
               break;
             default:
               iconName = 'help-outline';
@@ -43,25 +43,30 @@ const MainTabNavigator = () => {
         tabBarActiveTintColor: '#007bff',
         tabBarInactiveTintColor: 'gray',
         tabBarStyle: {
-          paddingVertical: 5,
+          paddingTop: 5,
+          paddingBottom: Platform.OS === 'ios' ? 20 : 10,
           borderTopLeftRadius: 15,
           borderTopRightRadius: 15,
-          backgroundColor: '#fff',
+          backgroundColor: theme.inputBg,
           position: 'absolute',
-          height: 60,
+          height: 70,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          marginBottom: 2,
         },
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Expenses" component={ExpenseScreen} />
-      <Tab.Screen name="Stats" component={StatsScreen} />
-      <Tab.Screen name="Profile" component={UserScreen} />
-      <Tab.Screen 
-        name="AddService" 
+      <Tab.Screen name="Lịch" component={ExpenseScreen} />
+      <Tab.Screen name="Báo cáo" component={StatsScreen} />
+      <Tab.Screen name="Cài đặt" component={SettingsScreen} /> {/* ✅ */}
+      <Tab.Screen
+        name="AddService"
         component={AddServiceScreen}
         options={{
           tabBarButton: () => null,
-          tabBarStyle: { display: 'none' }
+          tabBarStyle: { display: 'none' },
         }}
       />
     </Tab.Navigator>
@@ -69,6 +74,3 @@ const MainTabNavigator = () => {
 };
 
 export default MainTabNavigator;
-
-// chỉnh lại thanh text chồng lên trên icon
-// đồng bộ darkmode 

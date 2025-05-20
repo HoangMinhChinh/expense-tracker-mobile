@@ -1,6 +1,7 @@
 // src/style/translations.ts
 export const translations = {
   vi: {
+    // đăng ký // đăng nhập
     email: 'Email',
     password: 'Mật khẩu',
     confirmPassword: 'Xác nhận mật khẩu',
@@ -9,6 +10,13 @@ export const translations = {
     forgot: 'Quên mật khẩu?',
     reset: 'Gửi email đặt lại mật khẩu',
     success: 'Email đặt lại mật khẩu đã được gửi!',
+    invalidEmail: 'Email không hợp lệ',
+    required: 'Bắt buộc',
+    passwordMismatch: 'Mật khẩu không khớp',
+    passwordTooShort: 'Mật khẩu phải có ít nhất 6 ký tự',
+    emailAlreadyInUse: 'Email đã được sử dụng',
+    weakPassword: 'Mật khẩu quá yếu',
+    // user
     logout: 'Đăng xuất',
     fullName: 'Họ tên',
     age: 'Tuổi',
@@ -17,14 +25,10 @@ export const translations = {
     female: 'Nữ',
     changeAvatar: '📸 Đổi ảnh',
     save: 'Lưu thông tin',
-    invalidEmail: 'Email không hợp lệ',
-    required: 'Bắt buộc',
-    passwordMismatch: 'Mật khẩu không khớp',
+
     darkMode: 'Chế độ tối',
     language: 'Ngôn ngữ',
-    passwordTooShort: 'Mật khẩu phải có ít nhất 6 ký tự',
-    emailAlreadyInUse: 'Email đã được sử dụng',
-    weakPassword: 'Mật khẩu quá yếu',
+
     genericError: 'Đã xảy ra lỗi. Vui lòng thử lại sau.',
     loading: 'Đang xử lý...',
     userNotFound: 'Không tìm thấy người dùng với email này',
@@ -45,6 +49,12 @@ export const translations = {
     amountLabel: 'Số tiền',
     cancel: 'Hủy',
     addService: 'Thêm dịch vụ',
+    // filtermodall
+    fromDate: 'Từ ngày',
+    toDate: 'Đến ngày',
+    keyword: 'Từ khóa',
+    all: 'Tất cả', // Thêm key này
+    apply: 'Áp dụng', // Thêm key này
   },
   en: {
     email: 'Email',
@@ -91,5 +101,11 @@ export const translations = {
     amountLabel: 'Amount',
     cancel: 'Cancel',
     addService: 'Add Service',
+    // filtermodalfiltermodal
+    fromDate: 'From Date',
+    toDate: 'To Date',
+    keyword: 'Keyword',
+    all: 'All', 
+    apply: 'Apply', 
   },
 };

@@ -17,6 +17,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useIsFocused } from '@react-navigation/native';
 import AddServiceModal from '../screens/AddServiceModal';
+import FilterModal from '../screens/FilterModal';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -38,10 +39,13 @@ const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const [userName, setUserName] = useState('Người dùng');
   const [transactions, setTransactions] = useState<Expense[]>([]);
+  const [filteredTransactions, setFilteredTransactions] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Expense | null>(null);
+  const [filters, setFilters] = useState({ type: 'all', startDate: '', endDate: '', keyword: '' });
 
   const isFocused = useIsFocused();
 
@@ -50,6 +54,7 @@ const HomeScreen = () => {
     if (!user) return;
 
     try {
+      setLoading(true);
       const userRef = ref(db, 'users/' + user.uid);
       const userSnapshot = await get(userRef);
       if (userSnapshot.exists()) {
@@ -80,11 +85,46 @@ const HomeScreen = () => {
       );
 
       setTransactions(fetchedTransactions);
+      applyFilters(fetchedTransactions, filters);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Lỗi khi lấy dữ liệu:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const applyFilters = (data: Expense[], currentFilters: { type: string; startDate: string; endDate: string; keyword: string }) => {
+    let filtered = [...data];
+
+    // Lọc theo loại
+    if (currentFilters.type !== 'all') {
+      filtered = filtered.filter((transaction) => transaction.type === currentFilters.type);
+    }
+
+    // Lọc theo từ khóa
+    if (currentFilters.keyword) {
+      const keywordLower = currentFilters.keyword.toLowerCase();
+      filtered = filtered.filter((transaction) =>
+        transaction.name.toLowerCase().includes(keywordLower)
+      );
+    }
+
+    // Lọc theo khoảng thời gian
+    if (currentFilters.startDate) {
+      const start = new Date(currentFilters.startDate.split('/').reverse().join('-'));
+      filtered = filtered.filter((transaction) => new Date(transaction.date) >= start);
+    }
+    if (currentFilters.endDate) {
+      const end = new Date(currentFilters.endDate.split('/').reverse().join('-'));
+      filtered = filtered.filter((transaction) => new Date(transaction.date) <= end);
+    }
+
+    setFilteredTransactions(filtered);
+  };
+
+  const handleApplyFilters = (newFilters: { type: string; startDate: string; endDate: string; keyword: string }) => {
+    setFilters(newFilters);
+    applyFilters(transactions, newFilters);
   };
 
   useEffect(() => {
@@ -105,11 +145,14 @@ const HomeScreen = () => {
     setModalVisible(true);
   };
 
-  // Hàm định dạng thời gian
+  const openFilterModal = () => {
+    setFilterModalVisible(true);
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0'); // Lấy ngày, thêm số 0 nếu cần
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Lấy tháng (bắt đầu từ 0 nên +1)
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
@@ -148,20 +191,25 @@ const HomeScreen = () => {
         <Text style={[styles.sectionTitle, { color: theme.text }]}>
           Danh sách thu chi
         </Text>
-        <TouchableOpacity onPress={openAddModal}>
-          <Ionicons name="add-circle" size={28} color={theme.text} />
-        </TouchableOpacity>
+        <View style={styles.sectionButtons}>
+          <TouchableOpacity onPress={openAddModal}>
+            <Ionicons name="add-circle" size={28} color={theme.text} style={styles.icon} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={openFilterModal}>
+            <Ionicons name="filter" size={28} color={theme.text} style={styles.icon} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {loading ? (
         <ActivityIndicator size="large" color={theme.text} />
-      ) : transactions.length === 0 ? (
+      ) : filteredTransactions.length === 0 ? (
         <Text style={[styles.noTransactions, { color: theme.text }]}>
           Không có giao dịch nào.
         </Text>
       ) : (
         <FlatList
-          data={transactions}
+          data={filteredTransactions}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <TouchableOpacity
@@ -196,6 +244,13 @@ const HomeScreen = () => {
         onSuccess={fetchData}
         editMode={editMode}
         transaction={selectedTransaction}
+      />
+
+      {/* Modal lọc giao dịch */}
+      <FilterModal
+        visible={filterModalVisible}
+        onClose={() => setFilterModalVisible(false)}
+        onApply={handleApplyFilters}
       />
     </View>
   );
@@ -237,6 +292,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
+  },
+  sectionButtons: {
+    flexDirection: 'row',
+  },
+  icon: {
+    marginLeft: 10,
   },
   card: {
     flexDirection: 'row',
