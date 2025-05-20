@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Alert,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
@@ -39,6 +40,16 @@ const FilterModal = ({ visible, onClose, onApply }: FilterModalProps) => {
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
+  // Đặt lại trạng thái khi modal đóng
+  useEffect(() => {
+    if (!visible) {
+      setType('all');
+      setKeyword('');
+      setStartDate('');
+      setEndDate('');
+    }
+  }, [visible]);
+
   const formatDateForDisplay = (date: Date) => {
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -46,8 +57,28 @@ const FilterModal = ({ visible, onClose, onApply }: FilterModalProps) => {
     return `${day}/${month}/${year}`;
   };
 
+  const formatDateForApply = (displayDate: string) => {
+    if (!displayDate) return '';
+    const [day, month, year] = displayDate.split('/');
+    return `${year}-${month}-${day}`; // Chuyển thành YYYY-MM-DD
+  };
+
   const handleApply = () => {
-    onApply({ type, startDate, endDate, keyword });
+    if (startDate && endDate) {
+      const start = new Date(formatDateForApply(startDate));
+      const end = new Date(formatDateForApply(endDate));
+      if (start > end) {
+        Alert.alert(t.error || 'Lỗi', 'Ngày bắt đầu phải trước ngày kết thúc');
+        return;
+      }
+    }
+
+    onApply({
+      type,
+      startDate: formatDateForApply(startDate),
+      endDate: formatDateForApply(endDate),
+      keyword: keyword.trim(),
+    });
     onClose();
   };
 
@@ -59,47 +90,64 @@ const FilterModal = ({ visible, onClose, onApply }: FilterModalProps) => {
           style={styles.keyboardAvoidingView}
         >
           <ScrollView contentContainerStyle={styles.scrollContainer}>
-            <View style={[styles.modalBox, { backgroundColor: theme.inputBg || '#fff' }]}>
+            <View
+              style={[
+                styles.modalBox,
+                { backgroundColor: theme.inputBg || (isDarkMode ? '#333' : '#fff') },
+              ]}
+            >
               <View style={styles.header}>
-                <Text style={[styles.title, { color: theme.text }]}>{t.filter}</Text>
+                <Text style={[styles.title, { color: theme.text || '#000' }]}>{t.filter || 'Lọc'}</Text>
                 <TouchableOpacity onPress={onClose}>
-                  <Ionicons name="close" size={24} color={theme.text} />
+                  <Ionicons name="close" size={24} color={theme.text || '#000'} />
                 </TouchableOpacity>
               </View>
 
-              <Text style={[styles.label, { color: theme.text }]}>{t.typeLabel}</Text>
+              <Text style={[styles.label, { color: theme.text || '#000' }]}>{t.typeLabel || 'Loại giao dịch'}</Text>
               <View style={styles.typeRow}>
                 {['all', 'income', 'expense'].map((option) => (
                   <TouchableOpacity
                     key={option}
-                    style={[styles.typeButton, type === option && styles.activeType]}
+                    style={[
+                      styles.typeButton,
+                      { backgroundColor: theme.cardBackground || (isDarkMode ? '#444' : '#eee') },
+                      type === option && { backgroundColor: theme.button || '#0288D1' },
+                    ]}
                     onPress={() => setType(option)}
                   >
-                    <Text style={{ color: type === option ? '#fff' : theme.text }}>
-                      {option === 'all' ? t.all : option === 'income' ? t.income : t.expense}
+                    <Text style={{ color: type === option ? theme.buttonText || '#fff' : theme.text || '#000' }}>
+                      {option === 'all' ? t.all || 'Tất cả' : option === 'income' ? t.income || 'Thu' : t.expense || 'Chi'}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </View>
 
-              <Text style={[styles.label, { color: theme.text }]}>{t.keyword}</Text>
+              <Text style={[styles.label, { color: theme.text || '#000' }]}>{t.keyword || 'Từ khóa'}</Text>
               <TextInput
-                placeholder={t.transactionNamePlaceholder}
+                placeholder={t.keyword || 'Nhập từ khóa tìm kiếm'}
                 placeholderTextColor={theme.placeholder || '#999'}
                 value={keyword}
                 onChangeText={setKeyword}
-                style={[styles.input, { color: theme.inputText, borderColor: theme.border }]}
+                style={[
+                  styles.input,
+                  { color: theme.inputText || '#000', borderColor: theme.border || '#ccc' },
+                ]}
               />
 
-              <Text style={[styles.label, { color: theme.text }]}>{t.fromDate}</Text>
+              <Text style={[styles.label, { color: theme.text || '#000' }]}>{t.fromDate || 'Từ ngày'}</Text>
               <TouchableOpacity
-                style={styles.dateInputContainer}
+                style={[styles.dateInputContainer, { borderColor: theme.border || '#ccc' }]}
                 onPress={() => setShowStartDatePicker(true)}
               >
-                <Text style={[styles.dateText, { color: startDate ? theme.inputText : theme.placeholder || '#999' }]}>
+                <Text
+                  style={[
+                    styles.dateText,
+                    { color: startDate ? theme.inputText || '#000' : theme.placeholder || '#999' },
+                  ]}
+                >
                   {startDate || 'DD/MM/YYYY'}
                 </Text>
-                <Ionicons name="calendar-outline" size={20} color={theme.text} style={styles.calendarIcon} />
+                <Ionicons name="calendar-outline" size={20} color={theme.text || '#000'} style={styles.calendarIcon} />
               </TouchableOpacity>
               <DateTimePickerModal
                 isVisible={showStartDatePicker}
@@ -109,21 +157,26 @@ const FilterModal = ({ visible, onClose, onApply }: FilterModalProps) => {
                   setShowStartDatePicker(false);
                 }}
                 onCancel={() => setShowStartDatePicker(false)}
-                date={startDate ? new Date(startDate.split('/').reverse().join('-')) : new Date()}
-                maximumDate={endDate ? new Date(endDate.split('/').reverse().join('-')) : undefined}
+                date={startDate ? new Date(formatDateForApply(startDate)) : new Date()}
+                maximumDate={endDate ? new Date(formatDateForApply(endDate)) : new Date()} // Không chọn ngày tương lai
                 display={Platform.OS === 'ios' ? 'inline' : 'calendar'}
                 themeVariant={isDarkMode ? 'dark' : 'light'}
               />
 
-              <Text style={[styles.label, { color: theme.text }]}>{t.toDate}</Text>
+              <Text style={[styles.label, { color: theme.text || '#000' }]}>{t.toDate || 'Đến ngày'}</Text>
               <TouchableOpacity
-                style={styles.dateInputContainer}
+                style={[styles.dateInputContainer, { borderColor: theme.border || '#ccc' }]}
                 onPress={() => setShowEndDatePicker(true)}
               >
-                <Text style={[styles.dateText, { color: endDate ? theme.inputText : theme.placeholder || '#999' }]}>
+                <Text
+                  style={[
+                    styles.dateText,
+                    { color: endDate ? theme.inputText || '#000' : theme.placeholder || '#999' },
+                  ]}
+                >
                   {endDate || 'DD/MM/YYYY'}
                 </Text>
-                <Ionicons name="calendar-outline" size={20} color={theme.text} style={styles.calendarIcon} />
+                <Ionicons name="calendar-outline" size={20} color={theme.text || '#000'} style={styles.calendarIcon} />
               </TouchableOpacity>
               <DateTimePickerModal
                 isVisible={showEndDatePicker}
@@ -133,18 +186,25 @@ const FilterModal = ({ visible, onClose, onApply }: FilterModalProps) => {
                   setShowEndDatePicker(false);
                 }}
                 onCancel={() => setShowEndDatePicker(false)}
-                date={endDate ? new Date(endDate.split('/').reverse().join('-')) : new Date()}
-                minimumDate={startDate ? new Date(startDate.split('/').reverse().join('-')) : undefined}
+                date={endDate ? new Date(formatDateForApply(endDate)) : new Date()}
+                minimumDate={startDate ? new Date(formatDateForApply(startDate)) : undefined}
+                maximumDate={new Date()} // Không chọn ngày tương lai
                 display={Platform.OS === 'ios' ? 'inline' : 'calendar'}
                 themeVariant={isDarkMode ? 'dark' : 'light'}
               />
 
               <View style={styles.buttonContainer}>
-                <TouchableOpacity style={styles.addButton} onPress={handleApply}>
-                  <Text style={styles.addText}>{t.apply}</Text>
+                <TouchableOpacity
+                  style={[styles.addButton, { backgroundColor: theme.button || '#0288D1' }]}
+                  onPress={handleApply}
+                >
+                  <Text style={[styles.addText, { color: theme.buttonText || '#fff' }]}>{t.apply || 'Áp dụng'}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
-                  <Text style={styles.cancelText}>{t.cancel}</Text>
+                <TouchableOpacity
+                  style={[styles.cancelButton, { borderColor: theme.border || '#999' }]}
+                  onPress={onClose}
+                >
+                  <Text style={[styles.cancelText, { color: theme.text || '#333' }]}>{t.cancel || 'Hủy'}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -173,100 +233,95 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalBox: {
-    padding: 24,
-    borderRadius: 20,
+    padding: 16, // Giảm padding cho thiết bị nhỏ
+    borderRadius: 16,
     width: '90%',
-    maxWidth: 400,
+    maxWidth: 360, // Giảm maxWidth cho màn hình nhỏ
     elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   title: {
-    fontSize: 22,
+    fontSize: 20, // Giảm fontSize cho tiêu đề
     fontWeight: '700',
     textAlign: 'center',
   },
   label: {
-    fontSize: 16,
-    fontWeight: '800',
+    fontSize: 14, // Giảm fontSize cho label
+    fontWeight: '600',
     marginBottom: 8,
     marginTop: 10,
   },
   input: {
     borderWidth: 1,
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 16,
-    fontSize: 16,
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 12,
+    fontSize: 14,
   },
   dateInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 16,
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 12,
   },
   dateText: {
     flex: 1,
-    fontSize: 16,
+    fontSize: 14,
   },
   calendarIcon: {
-    marginLeft: 10,
+    marginLeft: 8,
   },
   typeRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   typeButton: {
     flex: 1,
-    padding: 12,
-    borderRadius: 10,
+    padding: 10,
+    borderRadius: 8,
     marginHorizontal: 4,
-    backgroundColor: '#eee',
     alignItems: 'center',
-  },
-  activeType: {
-    backgroundColor: '#0288D1',
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 10,
+    marginTop: 12,
   },
   addButton: {
     flex: 1,
-    backgroundColor: '#0288D1',
-    paddingVertical: 14,
-    borderRadius: 10,
+    paddingVertical: 12,
+    borderRadius: 8,
     alignItems: 'center',
-    marginRight: 5,
+    marginRight: 6,
   },
   addText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '600',
   },
   cancelButton: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 10,
+    paddingVertical: 12,
+    borderRadius: 8,
     alignItems: 'center',
-    backgroundColor: '#ccc',
+    backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: '#999',
-    marginLeft: 5,
+    marginLeft: 6,
   },
   cancelText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-    color: '#333',
   },
 });
 
