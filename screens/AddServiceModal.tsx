@@ -14,6 +14,7 @@ import {
 import { ref, push, update, remove } from 'firebase/database';
 import { auth, db } from '../config/firebaseConfig';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 
 interface Expense {
   id?: string;
@@ -38,6 +39,7 @@ const AddServiceModal: React.FC<Props> = ({
   transaction = null,
 }) => {
   const { theme } = useTheme();
+  const { t } = useLanguage();
 
   const [name, setName] = useState(transaction?.name || '');
   const [amount, setAmount] = useState(transaction?.amount?.toString() || '');
@@ -58,11 +60,11 @@ const AddServiceModal: React.FC<Props> = ({
   const handleAdd = async () => {
     const parsedAmount = Number(amount);
     if (!name.trim()) {
-      Alert.alert('Lỗi', 'Tên giao dịch không được để trống!');
+      Alert.alert(t('error'), t('nameRequired'));
       return;
     }
     if (!amount || isNaN(parsedAmount) || parsedAmount <= 0) {
-      Alert.alert('Lỗi', 'Số tiền phải là một số hợp lệ và lớn hơn 0!');
+      Alert.alert(t('error'), t('amountInvalid'));
       return;
     }
 
@@ -86,7 +88,7 @@ const AddServiceModal: React.FC<Props> = ({
       resetForm();
     } catch (error) {
       console.error('Lỗi khi thêm giao dịch:', error);
-      Alert.alert('Lỗi', 'Không thể thêm giao dịch');
+      Alert.alert(t('error'), t('cannotSave'));
     }
   };
 
@@ -94,11 +96,11 @@ const AddServiceModal: React.FC<Props> = ({
     if (!transaction?.id) return;
     const parsedAmount = Number(amount);
     if (!name.trim()) {
-      Alert.alert('Lỗi', 'Tên giao dịch không được để trống!');
+      Alert.alert(t('error'), t('nameRequired'));
       return;
     }
     if (!amount || isNaN(parsedAmount) || parsedAmount <= 0) {
-      Alert.alert('Lỗi', 'Số tiền phải là một số hợp lệ và lớn hơn 0!');
+      Alert.alert(t('error'), t('amountInvalid'));
       return;
     }
     try {
@@ -113,16 +115,16 @@ const AddServiceModal: React.FC<Props> = ({
       resetForm();
     } catch (error) {
       console.error('Lỗi khi cập nhật giao dịch:', error);
-      Alert.alert('Lỗi', 'Không thể cập nhật giao dịch');
+      Alert.alert(t('error'), t('cannotSave'));
     }
   };
 
   const handleDelete = async () => {
     if (!transaction?.id) return;
-    Alert.alert('Xác nhận xóa', 'Bạn có chắc muốn xóa giao dịch này?', [
-      { text: 'Hủy', style: 'cancel' },
+    Alert.alert(t('confirmDelete'), t('confirmDeleteMsg'), [
+      { text: t('cancel'), style: 'cancel' },
       {
-        text: 'Xóa',
+        text: t('delete'),
         style: 'destructive',
         onPress: async () => {
           try {
@@ -132,7 +134,7 @@ const AddServiceModal: React.FC<Props> = ({
             resetForm();
           } catch (error) {
             console.error('Lỗi khi xóa giao dịch:', error);
-            Alert.alert('Lỗi', 'Không thể xóa giao dịch');
+            Alert.alert(t('error'), t('cannotDelete'));
           }
         },
       },
@@ -155,11 +157,10 @@ const AddServiceModal: React.FC<Props> = ({
           <ScrollView contentContainerStyle={styles.scrollContainer}>
             <View style={[styles.modalBox, { backgroundColor: theme.inputBg }]}>
               <Text style={[styles.title, { color: theme.text }]}>
-                {editMode ? 'Sửa Giao Dịch' : 'Thêm Giao Dịch'}
+                {editMode ? t('editTransaction') : t('addTransaction')}
               </Text>
 
-              {/* Loại giao dịch */}
-              <Text style={[styles.label, { color: theme.text }]}>Loại giao dịch *</Text>
+              <Text style={[styles.label, { color: theme.text }]}>{t('transactionType')}</Text>
               <View style={styles.typeRow}>
                 <TouchableOpacity
                   style={[
@@ -170,7 +171,7 @@ const AddServiceModal: React.FC<Props> = ({
                   activeOpacity={0.7}
                 >
                   <Text style={[styles.typeText, { color: type === 'income' ? '#fff' : theme.text }]}>
-                    Thu
+                    {t('income')}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -182,13 +183,12 @@ const AddServiceModal: React.FC<Props> = ({
                   activeOpacity={0.7}
                 >
                   <Text style={[styles.typeText, { color: type === 'expense' ? '#fff' : theme.text }]}>
-                    Chi
+                    {t('expense')}
                   </Text>
                 </TouchableOpacity>
               </View>
 
-              {/* Tên giao dịch */}
-              <Text style={[styles.label, { color: theme.text }]}>Tên giao dịch *</Text>
+              <Text style={[styles.label, { color: theme.text }]}>{t('transactionName')}</Text>
               <TextInput
                 placeholder="Ví dụ: gội đầu"
                 placeholderTextColor={theme.placeholder}
@@ -197,9 +197,7 @@ const AddServiceModal: React.FC<Props> = ({
                 style={[styles.input, { color: theme.inputText, borderColor: theme.border }]}
               />
 
-
-              {/* Số tiền */}
-              <Text style={[styles.label, { color: theme.text }]}>Số tiền (VND) *</Text>
+              <Text style={[styles.label, { color: theme.text }]}>{t('amount')}</Text>
               <TextInput
                 placeholder="Nhập số tiền, ví dụ: 100000"
                 placeholderTextColor={theme.placeholder}
@@ -212,29 +210,28 @@ const AddServiceModal: React.FC<Props> = ({
                 style={[styles.input, { color: theme.inputText, borderColor: theme.border }]}
               />
               <Text style={[styles.previewText, { color: theme.text }]}>
-                {Number(amount || 0).toLocaleString('vi-VN')} VND {type === 'income' ? '(Thu)' : '(Chi)'}
+                {Number(amount || 0).toLocaleString('vi-VN')} VND ({t(type)})
               </Text>
 
-              {/* Nút hành động */}
               <View style={styles.actionRow}>
                 <TouchableOpacity
                   style={[styles.primaryButton, { backgroundColor: '#0288D1' }]}
                   onPress={editMode ? handleSaveEdit : handleAdd}
                 >
-                  <Text style={styles.buttonText}>{editMode ? 'Lưu' : 'Thêm'}</Text>
+                  <Text style={styles.buttonText}>{editMode ? t('save') : t('add')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.secondaryButton, { backgroundColor: '#E0E0E0' }]}
                   onPress={onClose}
                 >
-                  <Text style={[styles.buttonText, { color: '#333' }]}>Hủy</Text>
+                  <Text style={[styles.buttonText, { color: '#333' }]}>{t('cancel')}</Text>
                 </TouchableOpacity>
                 {editMode && (
                   <TouchableOpacity
                     style={[styles.secondaryButton, { backgroundColor: '#FF3B30' }]}
                     onPress={handleDelete}
                   >
-                    <Text style={[styles.buttonText, { color: '#fff' }]}>Xóa</Text>
+                    <Text style={[styles.buttonText, { color: '#fff' }]}>{t('delete')}</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -301,18 +298,10 @@ const styles = StyleSheet.create({
   },
   typeButtonActiveIncome: {
     backgroundColor: '#34C759',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
     elevation: 3,
   },
   typeButtonActiveExpense: {
     backgroundColor: '#FF3B30',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
     elevation: 3,
   },
   typeText: {

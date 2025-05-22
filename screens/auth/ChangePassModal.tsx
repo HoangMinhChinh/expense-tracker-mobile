@@ -37,7 +37,7 @@ const ChangePassModal: React.FC<ChangePassModalProps> = ({ visible, onClose }) =
     if (!user || !user.email) return;
 
     if (newPassword !== confirmPassword) {
-      Alert.alert(t.genericError, t.passwordMismatch);
+      Alert.alert(t('genericError'), t('passwordMismatch'));
       return;
     }
 
@@ -46,10 +46,10 @@ const ChangePassModal: React.FC<ChangePassModalProps> = ({ visible, onClose }) =
     try {
       await reauthenticateWithCredential(user, credential);
       await updatePassword(user, newPassword);
-      Alert.alert('✅', t.save);
+      Alert.alert('✅', t('save'));
       onClose();
     } catch (error: any) {
-      Alert.alert(t.genericError, error.message);
+      Alert.alert(t('genericError'), error.message);
     }
   };
 
@@ -90,41 +90,41 @@ const ChangePassModal: React.FC<ChangePassModalProps> = ({ visible, onClose }) =
           keyboardShouldPersistTaps="handled"
         >
           <View style={[styles.modalBox, { backgroundColor: theme.inputBg }]}>
-            <Text style={[styles.title, { color: theme.text }]}>{t.password || 'Đổi mật khẩu'}</Text>
+            <Text style={[styles.title, { color: theme.text }]}>{t('changepassword')}</Text>
 
             {renderPasswordInput(
-              t.password || 'Mật khẩu hiện tại',
+              t('currentPassword'),
               currentPassword,
               setCurrentPassword,
               showCurrent,
               setShowCurrent,
-              t.password || 'Mật khẩu hiện tại'
+              t('currentPassword')
             )}
 
             {renderPasswordInput(
-              t.newPassword || 'Mật khẩu mới',
+              t('newPassword'),
               newPassword,
               setNewPassword,
               showNew,
               setShowNew,
-              t.newPassword || 'Mật khẩu mới'
+              t('newPassword')
             )}
 
             {renderPasswordInput(
-              t.confirmPassword || 'Xác nhận mật khẩu mới',
+              t('confirmPassword'),
               confirmPassword,
               setConfirmPassword,
               showConfirm,
               setShowConfirm,
-              t.confirmPassword || 'Xác nhận mật khẩu mới'
+              t('confirmPassword')
             )}
 
             <View style={styles.buttonRow}>
               <TouchableOpacity style={[styles.cancelButton, { backgroundColor: '#ccc' }]} onPress={onClose}>
-                <Text style={[styles.cancelText, { color: '#000' }]}>{t.cancel}</Text>
+                <Text style={[styles.cancelText, { color: '#000' }]}>{t('cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.saveButton, { backgroundColor: '#007bff' }]} onPress={handleChangePassword}>
-                <Text style={[styles.saveText, { color: '#fff' }]}>{t.save}</Text>
+                <Text style={[styles.saveText, { color: '#fff' }]}>{t('save')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -139,12 +139,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
-    // Đã xóa alignItems: 'center'
   },
   scrollContainer: {
     flexGrow: 1,
     justifyContent: 'center',
-    alignItems: 'center', // Căn giữa nội dung trong ScrollView
+    alignItems: 'center',
   },
   modalBox: {
     width: '85%',
@@ -153,7 +152,6 @@ const styles = StyleSheet.create({
     padding: 28,
     elevation: 10,
     marginBottom: 20,
-    marginHorizontal: 'auto', // Căn giữa modalBox theo chiều ngang
   },
   title: {
     fontSize: 26,

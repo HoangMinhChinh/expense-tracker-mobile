@@ -22,7 +22,7 @@ const ExpenseScreen = () => {
   const { theme } = useTheme();
   const { t } = useLanguage();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [currentMonth, setCurrentMonth] = useState(new Date().toISOString().slice(0, 7)); // YYYY-MM
+  const [currentMonth, setCurrentMonth] = useState(new Date().toISOString().slice(0, 7));
   const [transactions, setTransactions] = useState<Expense[]>([]);
   const [allTransactions, setAllTransactions] = useState<Expense[]>([]);
   const [markedDates, setMarkedDates] = useState({});
@@ -32,7 +32,7 @@ const ExpenseScreen = () => {
   useEffect(() => {
     const user = auth.currentUser;
     if (!user) {
-      alert(t.userNotFound);
+      alert(t('userNotFound'));
       return;
     }
 
@@ -47,12 +47,10 @@ const ExpenseScreen = () => {
           const txDate = typeof tx.date === 'string' ? tx.date.slice(0, 10) : new Date(tx.date).toISOString().slice(0, 10);
           data.push({ id: child.key, ...tx, date: txDate });
 
-          // Khởi tạo marked[txDate] nếu chưa tồn tại
           if (!marked[txDate]) {
             marked[txDate] = { dots: [] };
           }
 
-          // Chỉ thêm một dấu chấm cho mỗi loại (income/expense) mỗi ngày
           if (tx.type === 'income' && !marked[txDate].dots.some((dot) => dot.key === `income-${txDate}`)) {
             marked[txDate].dots.push({
               key: `income-${txDate}`,
@@ -69,7 +67,6 @@ const ExpenseScreen = () => {
         }
       });
 
-      // Lọc giao dịch theo ngày được chọn
       const filteredData = data.filter((tx) => tx.date === selectedDate);
       setTransactions(filteredData);
       setAllTransactions(data);
@@ -83,14 +80,13 @@ const ExpenseScreen = () => {
       });
     }, (error) => {
       console.error('Lỗi khi lấy giao dịch:', error);
-      alert(t.genericError);
+      alert(t('genericError'));
     });
 
     return () => unsubscribe();
   }, [selectedDate, t]);
 
   const handleSuccess = () => {
-    // Làm mới dữ liệu sau khi thêm/sửa/xóa giao dịch
     const transactionsRef = ref(db, 'transactions');
     onValue(
       transactionsRef,
@@ -99,10 +95,7 @@ const ExpenseScreen = () => {
         snapshot.forEach((child) => {
           const transaction = child.val();
           if (transaction.userId === auth.currentUser?.uid) {
-            data.push({
-              id: child.key,
-              ...transaction,
-            });
+            data.push({ id: child.key, ...transaction });
           }
         });
         const filteredData = data.filter((tx) => tx.date === selectedDate);
@@ -118,20 +111,15 @@ const ExpenseScreen = () => {
     setModalVisible(true);
   };
 
-  // Tính tổng thu/chi/tổng cho tháng hiện tại
   const monthTransactions = allTransactions.filter((t) => t.date.startsWith(currentMonth));
-  const income = monthTransactions
-    .filter((t) => t.type === 'income')
-    .reduce((sum, t) => sum + t.amount, 0);
-  const expense = monthTransactions
-    .filter((t) => t.type === 'expense')
-    .reduce((sum, t) => sum + t.amount, 0);
+  const income = monthTransactions.filter((t) => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+  const expense = monthTransactions.filter((t) => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
   const total = income - expense;
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: theme.text }]}>{t.expenses || 'Chi tiêu'}</Text>
+        <Text style={[styles.title, { color: theme.text }]}>{t('expenses')}</Text>
       </View>
 
       <Calendar
@@ -154,21 +142,20 @@ const ExpenseScreen = () => {
 
       <View style={styles.summaryRow}>
         <Text style={[styles.income, { color: '#34C759' }]}>
-          {t.income || 'Thu'}{'\n'}{income.toLocaleString('vi-VN')}₫
+          {t('income')}{'\n'}{income.toLocaleString('vi-VN')}₫
         </Text>
         <Text style={[styles.expense, { color: '#FF3B30' }]}>
-          {t.expense || 'Chi'}{'\n'}{expense.toLocaleString('vi-VN')}₫
+          {t('expense')}{'\n'}{expense.toLocaleString('vi-VN')}₫
         </Text>
         <Text style={[styles.total, { color: total >= 0 ? '#34C759' : '#FF3B30' }]}>
-          {t.total || 'Tổng'}{'\n'}
-          {(total >= 0 ? '+' : '')}{total.toLocaleString('vi-VN')}₫
+          {t('total')}{'\n'}{total >= 0 ? '+' : ''}{total.toLocaleString('vi-VN')}₫
         </Text>
       </View>
 
       <FlatList
         data={transactions}
         keyExtractor={(item) => item.id}
-        ListEmptyComponent={<Text style={[styles.emptyText, { color: theme.text }]}>{t.noData || 'Không có dữ liệu'}</Text>}
+        ListEmptyComponent={<Text style={[styles.emptyText, { color: theme.text }]}>{t('noData')}</Text>}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={[styles.item, { borderColor: theme.border }]}
@@ -194,7 +181,7 @@ const ExpenseScreen = () => {
       />
 
       <View style={[styles.banner, { backgroundColor: theme.cardBackground }]}>
-        <Text style={{ color: theme.text }}>[ {t.addService || 'Thêm dịch vụ'} ]</Text>
+        <Text style={{ color: theme.text }}>[ {t('addService')} ]</Text>
       </View>
 
       <AddServiceModal
@@ -212,9 +199,7 @@ const ExpenseScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
+  container: { flex: 1 },
   header: {
     paddingTop: 40,
     paddingBottom: 10,

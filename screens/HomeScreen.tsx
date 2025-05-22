@@ -1,4 +1,3 @@
-// src/screens/HomeScreen.tsx
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -18,6 +17,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useIsFocused } from '@react-navigation/native';
 import AddServiceModal from '../screens/AddServiceModal';
 import FilterModal from '../screens/FilterModal';
+import { useLanguage } from '../context/LanguageContext';
 
 export type RootStackParamList = {
   Home: undefined;
@@ -36,8 +36,9 @@ interface Expense {
 
 const HomeScreen = () => {
   const { theme } = useTheme();
+  const { t } = useLanguage();
   const navigation = useNavigation<NavigationProp>();
-  const [userName, setUserName] = useState('Người dùng');
+  const [userName, setUserName] = useState(t('user'));
   const [transactions, setTransactions] = useState<Expense[]>([]);
   const [filteredTransactions, setFilteredTransactions] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,7 +59,7 @@ const HomeScreen = () => {
       const userRef = ref(db, 'users/' + user.uid);
       const userSnapshot = await get(userRef);
       if (userSnapshot.exists()) {
-        setUserName(userSnapshot.val().fullName || 'Người dùng');
+        setUserName(userSnapshot.val().fullName || t('user'));
       }
 
       const transactionsRef = ref(db, 'transactions');
@@ -96,12 +97,10 @@ const HomeScreen = () => {
   const applyFilters = (data: Expense[], currentFilters: { type: string; startDate: string; endDate: string; keyword: string }) => {
     let filtered = [...data];
 
-    // Lọc theo loại
     if (currentFilters.type !== 'all') {
       filtered = filtered.filter((transaction) => transaction.type === currentFilters.type);
     }
 
-    // Lọc theo từ khóa
     if (currentFilters.keyword) {
       const keywordLower = currentFilters.keyword.toLowerCase();
       filtered = filtered.filter((transaction) =>
@@ -109,14 +108,27 @@ const HomeScreen = () => {
       );
     }
 
-    // Lọc theo khoảng thời gian
-    if (currentFilters.startDate) {
-      const start = new Date(currentFilters.startDate.split('/').reverse().join('-'));
-      filtered = filtered.filter((transaction) => new Date(transaction.date) >= start);
-    }
-    if (currentFilters.endDate) {
-      const end = new Date(currentFilters.endDate.split('/').reverse().join('-'));
-      filtered = filtered.filter((transaction) => new Date(transaction.date) <= end);
+    if (!currentFilters.startDate && !currentFilters.endDate) {
+      const currentDate = new Date();
+      const currentMonth = currentDate.getMonth();
+      const currentYear = currentDate.getFullYear();
+
+      filtered = filtered.filter((transaction) => {
+        const transactionDate = new Date(transaction.date);
+        return (
+          transactionDate.getMonth() === currentMonth &&
+          transactionDate.getFullYear() === currentYear
+        );
+      });
+    } else {
+      if (currentFilters.startDate) {
+        const start = new Date(currentFilters.startDate.split('/').reverse().join('-'));
+        filtered = filtered.filter((transaction) => new Date(transaction.date) >= start);
+      }
+      if (currentFilters.endDate) {
+        const end = new Date(currentFilters.endDate.split('/').reverse().join('-'));
+        filtered = filtered.filter((transaction) => new Date(transaction.date) <= end);
+      }
     }
 
     setFilteredTransactions(filtered);
@@ -161,7 +173,6 @@ const HomeScreen = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.headerProfile}
@@ -179,17 +190,15 @@ const HomeScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Logo */}
       <Image
         source={require('../assets/firebase_logo.png')}
         style={styles.logo}
         resizeMode="contain"
       />
 
-      {/* Danh sách thu chi */}
       <View style={styles.sectionHeader}>
         <Text style={[styles.sectionTitle, { color: theme.text }]}>
-          Danh sách thu chi
+          {t('transactionList')}
         </Text>
         <View style={styles.sectionButtons}>
           <TouchableOpacity onPress={openAddModal}>
@@ -205,7 +214,7 @@ const HomeScreen = () => {
         <ActivityIndicator size="large" color={theme.text} />
       ) : filteredTransactions.length === 0 ? (
         <Text style={[styles.noTransactions, { color: theme.text }]}>
-          Không có giao dịch nào.
+          {t('noTransactions')}
         </Text>
       ) : (
         <FlatList
@@ -234,10 +243,10 @@ const HomeScreen = () => {
               </Text>
             </TouchableOpacity>
           )}
+          contentContainerStyle={{ paddingBottom: 45 }}
         />
       )}
 
-      {/* Modal thêm/sửa giao dịch */}
       <AddServiceModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -246,7 +255,6 @@ const HomeScreen = () => {
         transaction={selectedTransaction}
       />
 
-      {/* Modal lọc giao dịch */}
       <FilterModal
         visible={filterModalVisible}
         onClose={() => setFilterModalVisible(false)}

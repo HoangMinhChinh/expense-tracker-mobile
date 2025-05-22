@@ -10,12 +10,13 @@ import SettingsScreen from '../screens/SettingScreen';
 import AddServiceModal from '../screens/AddServiceModal';
 
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export type MainTabParamList = {
   Home: undefined;
-  'Lịch': undefined;
-  'Báo cáo': undefined;
-  'Cài đặt': undefined;
+  Calendar: undefined;
+  Stats: undefined;
+  Settings: undefined;
   AddService: undefined;
 };
 
@@ -23,25 +24,26 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 
 const MainTabNavigator = () => {
   const { theme } = useTheme();
+  const { t } = useLanguage();
 
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: string = '';
+          let iconName = '';
 
           switch (route.name) {
             case 'Home':
               iconName = focused ? 'home' : 'home-outline';
               break;
-            case 'Lịch':
+            case 'Calendar':
               iconName = focused ? 'calendar' : 'calendar-outline';
               break;
-            case 'Báo cáo':
+            case 'Stats':
               iconName = focused ? 'stats-chart' : 'stats-chart-outline';
               break;
-            case 'Cài đặt':
+            case 'Settings':
               iconName = focused ? 'settings' : 'settings-outline';
               break;
             default:
@@ -67,10 +69,10 @@ const MainTabNavigator = () => {
         },
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Lịch" component={ExpenseScreen} />
-      <Tab.Screen name="Báo cáo" component={StatsScreen} />
-      <Tab.Screen name="Cài đặt" component={SettingsScreen} />
+      <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: t('home') }} />
+      <Tab.Screen name="Calendar" component={ExpenseScreen} options={{ tabBarLabel: t('calendar') }} />
+      <Tab.Screen name="Stats" component={StatsScreen} options={{ tabBarLabel: t('stats') }} />
+      <Tab.Screen name="Settings" component={SettingsScreen} options={{ tabBarLabel: t('settings') }} />
       <Tab.Screen
         name="AddService"
         component={AddServiceModal}

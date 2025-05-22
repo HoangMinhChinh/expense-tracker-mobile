@@ -1,3 +1,4 @@
+// LanguageContext.tsx
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { translations } from '../style/translations';
 
@@ -6,14 +7,17 @@ type Language = 'vi' | 'en';
 interface LanguageContextProps {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: typeof translations['vi'];
+  t: (key: string) => string; // Định nghĩa t là hàm
 }
 
 const LanguageContext = createContext<LanguageContextProps | undefined>(undefined);
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [language, setLanguage] = useState<Language>('vi');
-  const t = translations[language];
+
+  const t = (key: string): string => {
+    return translations[language][key] || key; // Trả về key nếu không tìm thấy bản dịch
+  };
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>

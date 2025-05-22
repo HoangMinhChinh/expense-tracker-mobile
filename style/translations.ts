@@ -1,11 +1,14 @@
-// src/style/translations.ts
+import { tr } from "date-fns/locale";
+
+// translations.ts
 export const translations = {
   vi: {
-    // đăng ký // đăng nhập
+    // Đăng ký / Đăng nhập
     email: 'Email',
     password: 'Mật khẩu',
     newPassword: 'Mật khẩu mới',
     confirmPassword: 'Xác nhận mật khẩu',
+    currentPassword: 'Mật khẩu hiện tại',
     login: 'Đăng nhập',
     signup: 'Đăng ký',
     forgot: 'Quên mật khẩu?',
@@ -17,9 +20,10 @@ export const translations = {
     passwordTooShort: 'Mật khẩu phải có ít nhất 6 ký tự',
     emailAlreadyInUse: 'Email đã được sử dụng',
     weakPassword: 'Mật khẩu quá yếu',
-    // user
+
+    // User
     logout: 'Đăng xuất',
-    fullName: 'Họ tên',
+    fullName: 'Thông tin cá nhân',
     age: 'Tuổi',
     gender: 'Giới tính',
     male: 'Nam',
@@ -35,21 +39,25 @@ export const translations = {
     welcome: 'Chào mừng',
     expenses: 'Chi tiêu',
     addExpense: 'Thêm chi tiêu',
+    // home
+    transactionList: 'Danh sách chi tiêu',
     filter: 'Lọc',
-    transactionNameEmpty: 'Tên giao dịch không được để trống!',
+    transactionNameEmpty: 'Tên chi tiêu không được để trống!',
     invalidAmount: 'Số tiền phải là một số hợp lệ và lớn hơn 0!',
-    income: 'Thu',
-    expense: 'Chi',
+    income: 'Thu nhập',
+    expense: 'Chi tiêu',
     processing: 'Đang xử lý...',
     add: 'Thêm',
     amountDisplay: 'Số tiền sẽ hiển thị',
-    transactionNamePlaceholder: 'Nhập tên giao dịch',
-    typeLabel: 'Loại giao dịch',
-    transactionNameLabel: 'Tên giao dịch',
-    amountLabel: 'Số tiền',
+    transactionNamePlaceholder: 'Nhập tên chi tiêutiêu',
+    transactionType: 'Loại chi tiêu',
+    transactionName: 'Tênchi tiêu',
+    amount: 'Số tiền',
     cancel: 'Hủy',
-    addService: 'Thêm dịch vụ',
-    // filtermodal
+    addTransaction: 'Thêm chi tiêu',
+    editTransaction: 'Chỉnh sửa chi tiêu',
+
+    // FilterModal
     fromDate: 'Từ ngày',
     toDate: 'Đến ngày',
     keyword: 'Từ khóa',
@@ -57,16 +65,58 @@ export const translations = {
     apply: 'Áp dụng',
     changepassword: 'Đổi mật khẩu',
     total: 'Tổng',
-    noData: 'Không có dữ liệu', // Thêm khóa noData
-    error: 'Lỗi', // Thêm cho AddServiceModal
-    confirmDelete: 'Xác nhận xóa', // Thêm cho AddServiceModal
-    deleteTransactionConfirm: 'Bạn có chắc muốn xóa giao dịch này?', // Thêm cho AddServiceModal
+    noData: 'Không có dữ liệu',
+    error: 'Lỗi',
+    confirmDelete: 'Xác nhận xóa',
+    deleteTransactionConfirm: 'Bạn có chắc muốn xóa giao dịch này?',
+
+    // StartScreen
+    'start.title': 'Báo cáo chi tiêu',
+    'start.week': 'Tuần',
+    'start.month': 'Tháng',
+    'start.year': 'Năm',
+    'start.noData': 'Không có dữ liệu chi tiêu',
+
+    // StatsScreen
+  
+    financial_report: 'Báo cáo tài chính',
+    analysis: 'Phân tích',
+    details: 'Chi tiết',
+    other_expense: 'Chi khác',
+    no_data_available: 'Không có dữ liệu',
+    firebase_error: 'Lỗi kết nối cơ sở dữ liệu',
+    not_authenticated: 'Vui lòng đăng nhập',
+    no_data_available_try_another_period: 'Không có giao dịch trong khoảng thời gian này. Hãy thử khoảng thời gian khác.',
+    sun: 'CN',
+    mon: 'T2',
+    tue: 'T3',
+    wed: 'T4',
+    thu: 'T5',
+    fri: 'T6',
+    sat: 'T7',
+    month_1: 'Tháng 1',
+    month_2: 'Tháng 2',
+    month_3: 'Tháng 3',
+    month_4: 'Tháng 4',
+    month_5: 'Tháng 5',
+    month_6: 'Tháng 6',
+    month_7: 'Tháng 7',
+    month_8: 'Tháng 8',
+    month_9: 'Tháng 9',
+    month_10: 'Tháng 10',
+    month_11: 'Tháng 11',
+    month_12: 'Tháng 12',
+
+    home: 'Trang chủ',
+    calendar: 'Lịch',
+    stats: 'Báo cáo'
   },
   en: {
     email: 'Email',
     password: 'Password',
     newPassword: 'New Password',
     confirmPassword: 'Confirm password',
+    currentPassword: 'Current Password',
     login: 'Login',
     signup: 'Sign up',
     forgot: 'Forgot password?',
@@ -95,6 +145,8 @@ export const translations = {
     welcome: 'Welcome',
     expenses: 'Expenses',
     addExpense: 'Add Expense',
+    // home
+    transactionList: 'Transaction List',
     filter: 'Filter',
     transactionNameEmpty: 'Transaction name cannot be empty!',
     invalidAmount: 'Amount must be a valid number and greater than 0!',
@@ -104,12 +156,13 @@ export const translations = {
     add: 'Add',
     amountDisplay: 'Amount will be displayed',
     transactionNamePlaceholder: 'Enter transaction name',
-    typeLabel: 'Transaction Type',
-    transactionNameLabel: 'Transaction Name',
-    amountLabel: 'Amount',
+    transactionType: 'Transaction Type',
+    transactionName: 'Transaction Name',
+    amount: 'Amount',
     cancel: 'Cancel',
     addService: 'Add Service',
-    // filtermodal
+    editTransaction: 'Edit Transaction',
+
     fromDate: 'From Date',
     toDate: 'To Date',
     keyword: 'Keyword',
@@ -117,9 +170,47 @@ export const translations = {
     apply: 'Apply',
     changepassword: 'Change Password',
     total: 'Total',
-    noData: 'No data', // Thêm khóa noData
-    error: 'Error', // Thêm cho AddServiceModal
-    confirmDelete: 'Confirm Delete', // Thêm cho AddServiceModal
-    deleteTransactionConfirm: 'Are you sure you want to delete this transaction?', // Thêm cho AddServiceModal
-  },
+    noData: 'No data',
+    error: 'Error',
+    confirmDelete: 'Confirm Delete',
+    deleteTransactionConfirm: 'Are you sure you want to delete this transaction?',
+
+    'start.title': 'Expense Report',
+    'start.week': 'Week',
+    'start.month': 'Month',
+    'start.year': 'Year',
+    'start.noData': 'No expense data',
+
+    financial_report: 'Financial Report',
+    analysis: 'Analysis',
+    details: 'Details',
+    other_expense: 'Other Expense',
+    no_data_available: 'No data available',
+    firebase_error: 'Database connection error',
+    not_authenticated: 'Please log in',
+    no_data_available_try_another_period: 'No transactions in this period. Try another period.',
+    sun: 'Sun',
+    mon: 'Mon',
+    tue: 'Tue',
+    wed: 'Wed',
+    thu: 'Thu',
+    fri: 'Fri',
+    sat: 'Sat',
+    month_1: 'January',
+    month_2: 'February',
+    month_3: 'March',
+    month_4: 'April',
+    month_5: 'May',
+    month_6: 'June',
+    month_7: 'July',
+    month_8: 'August',
+    month_9: 'September',
+    month_10: 'October',
+    month_11: 'November',
+    month_12: 'December',
+
+    home: 'Home',
+    calendar: 'Calendar',
+    stats: 'Stats'
+  }
 };

@@ -9,6 +9,7 @@ interface Theme {
   button: string;
   buttonText: string;
   cardBackground: string;
+  error: string; // Thêm thuộc tính error
 }
 
 export const lightTheme: Theme = {
@@ -20,7 +21,8 @@ export const lightTheme: Theme = {
   border: '#ccc',
   button: '#007bff',
   buttonText: '#fff',
-  cardBackground: '#fff'
+  cardBackground: '#fff',
+  error: '#FF5722', // Màu lỗi cho light mode
 };
 
 export const darkTheme: Theme = {
@@ -32,5 +34,6 @@ export const darkTheme: Theme = {
   border: '#555',
   button: '#0056b3',
   buttonText: '#fff',
-  cardBackground: '#3d3d3d'
+  cardBackground: '#3d3d3d',
+  error: '#FF8A65', // Màu lỗi cho dark mode
 };

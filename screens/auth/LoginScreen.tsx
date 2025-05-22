@@ -1,8 +1,7 @@
-// File chỉnh sửa lại theo yêu cầu
 import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import {
-  View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Image
+  View, Text, TextInput, StyleSheet, TouchableOpacity, Image
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Formik } from 'formik';
@@ -11,8 +10,8 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '../../config/firebaseConfig';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTheme } from '../../context/ThemeContext';
-import { doc, getDoc } from 'firebase/firestore';
-import { lightTheme, darkTheme } from '../../style/theme'; // ✅ Sửa ở đây
+import { ref, get } from 'firebase/database'; // ✅ import đúng cho Realtime Database
+import { lightTheme, darkTheme } from '../../style/theme';
 
 type Props = NativeStackScreenProps<any>;
 
@@ -21,24 +20,26 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const [errorState, setErrorState] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const { language, setLanguage, t } = useLanguage();
-  const currentTheme = isDarkMode ? darkTheme : lightTheme; // ✅ Sửa ở đây
+  const currentTheme = isDarkMode ? darkTheme : lightTheme;
 
   const LoginSchema = Yup.object().shape({
-    email: Yup.string().email(t.invalidEmail).required(t.required),
-    password: Yup.string().required(t.required),
+    email: Yup.string().email(t('invalidEmail')).required(t('required')),
+    password: Yup.string().required(t('required')),
   });
 
   const handleLogin = async (values: { email: string; password: string }) => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
-      const userRef = doc(db, 'users', user.uid);
-      const userDoc = await getDoc(userRef);
 
-      if (!userDoc.exists() || !userDoc.data().fullName) {
+      const userRef = ref(db, `users/${user.uid}`);
+      const snapshot = await get(userRef);
+      const userData = snapshot.exists() ? snapshot.val() : null;
+
+      if (!userData || !userData.fullName) {
         navigation.navigate('User');
       } else {
-        navigation.navigate('Home');
+        navigation.navigate('MainTab');
       }
     } catch (error: any) {
       setErrorState(error.message);
@@ -87,7 +88,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             <View style={[styles.inputWrapper, { borderColor: currentTheme.border, backgroundColor: currentTheme.inputBg }]}>
               <Ionicons name="mail-outline" size={20} style={styles.icon} color={currentTheme.placeholder} />
               <TextInput
-                placeholder={t.email}
+                placeholder={t('email')}
                 placeholderTextColor={currentTheme.placeholder}
                 style={[styles.inputFlex, { color: currentTheme.inputText }]}
                 onChangeText={handleChange('email')}
@@ -101,7 +102,7 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             <View style={[styles.inputWrapper, { borderColor: currentTheme.border, backgroundColor: currentTheme.inputBg }]}>
               <Ionicons name="lock-closed-outline" size={20} style={styles.icon} color={currentTheme.placeholder} />
               <TextInput
-                placeholder={t.password}
+                placeholder={t('password')}
                 secureTextEntry={!showPassword}
                 placeholderTextColor={currentTheme.placeholder}
                 style={[styles.inputFlex, { color: currentTheme.inputText }]}
@@ -122,21 +123,20 @@ const LoginScreen: React.FC<Props> = ({ navigation }) => {
             {/* Login Button */}
             <TouchableOpacity
               style={[styles.loginButton, { backgroundColor: currentTheme.button }]}
-              onPress={() => handleSubmit()} // ✅ bọc handleSubmit trong arrow function
+              onPress={() => handleSubmit()}
             >
               <Text style={[styles.loginButtonText, { color: currentTheme.buttonText }]}>
-                {t.login}
+                {t('login')}
               </Text>
             </TouchableOpacity>
-
 
             {/* Links */}
             <View style={styles.linkContainer}>
               <Text style={styles.link} onPress={() => navigation.navigate('Signup')}>
-                {t.signup}
+                {t('signup')}
               </Text>
               <Text style={styles.link} onPress={() => navigation.navigate('ForgotPassword')}>
-                {t.forgot}
+                {t('forgot')}
               </Text>
             </View>
           </View>

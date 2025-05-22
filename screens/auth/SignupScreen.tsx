@@ -22,6 +22,7 @@ import { lightTheme, darkTheme } from '../../style/theme';
 type RootStackParamList = {
   Login: undefined;
   Signup: undefined;
+  User: undefined;
 };
 type Props = NativeStackScreenProps<RootStackParamList>;
 
@@ -36,45 +37,38 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
   const theme = isDarkMode ? darkTheme : lightTheme;
 
   const SignupSchema = Yup.object().shape({
-    email: Yup.string().email(t.invalidEmail).required(t.required),
-    password: Yup.string().min(6, t.passwordTooShort).required(t.required),
+    email: Yup.string().email(t('invalidEmail')).required(t('required')),
+    password: Yup.string().min(6, t('passwordTooShort')).required(t('required')),
     confirmPassword: Yup.string()
-      .oneOf([Yup.ref('password')], t.passwordMismatch)
-      .required(t.required),
+      .oneOf([Yup.ref('password')], t('passwordMismatch'))
+      .required(t('required')),
   });
 
   const getFriendlyErrorMessage = (error: any) => {
     switch (error.code) {
       case 'auth/email-already-in-use':
-        return t.emailAlreadyInUse;
+        return t('emailAlreadyInUse');
       case 'auth/invalid-email':
-        return t.invalidEmail;
+        return t('invalidEmail');
       case 'auth/weak-password':
-        return t.weakPassword;
+        return t('weakPassword');
       default:
-        return t.genericError;
+        return t('genericError');
     }
   };
 
   const handleSignup = async (values: { email: string; password: string; confirmPassword: string }) => {
     setIsLoading(true);
     try {
-      // Tạo tài khoản với Firebase Auth
-      const userCredential = await createUserWithEmailAndPassword(
-        auth, 
-        values.email, 
-        values.password
-      );
+      const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
 
-      // Tạo node cho user trong Realtime Database
       const userRef = ref(db, 'users/' + user.uid);
       await set(userRef, {
         email: values.email,
         createdAt: new Date().toISOString(),
       });
 
-      // Chuyển đến màn hình User để điền thông tin
       navigation.navigate('User');
     } catch (error: any) {
       setErrorState(getFriendlyErrorMessage(error));
@@ -113,7 +107,6 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
         resizeMode="contain"
       />
 
-      {/* Formik Form */}
       <Formik
         initialValues={{ email: '', password: '', confirmPassword: '' }}
         validationSchema={SignupSchema}
@@ -121,15 +114,13 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
       >
         {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
           <View>
-            {/* Error State */}
             {errorState && <Text style={styles.error}>{errorState}</Text>}
 
-            {/* Email Input */}
+            {/* Email */}
             <View style={[styles.inputWrapper, { borderColor: theme.border, backgroundColor: theme.inputBg }]}>
               <Ionicons name="mail-outline" size={20} style={styles.icon} color={theme.placeholder} />
               <TextInput
-                testID="email-input"
-                placeholder={t.email}
+                placeholder={t('email')}
                 placeholderTextColor={theme.placeholder}
                 style={[styles.inputFlex, { color: theme.inputText }]}
                 onChangeText={handleChange('email')}
@@ -139,12 +130,11 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
             </View>
             {touched.email && errors.email && <Text style={styles.error}>{errors.email}</Text>}
 
-            {/* Password Input */}
+            {/* Password */}
             <View style={[styles.inputWrapper, { borderColor: theme.border, backgroundColor: theme.inputBg }]}>
               <Ionicons name="lock-closed-outline" size={20} style={styles.icon} color={theme.placeholder} />
               <TextInput
-                testID="password-input"
-                placeholder={t.password}
+                placeholder={t('password')}
                 secureTextEntry={!showPassword}
                 placeholderTextColor={theme.placeholder}
                 style={[styles.inputFlex, { color: theme.inputText }]}
@@ -162,12 +152,11 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
             </View>
             {touched.password && errors.password && <Text style={styles.error}>{errors.password}</Text>}
 
-            {/* Confirm Password Input */}
+            {/* Confirm Password */}
             <View style={[styles.inputWrapper, { borderColor: theme.border, backgroundColor: theme.inputBg }]}>
               <Ionicons name="lock-closed-outline" size={20} style={styles.icon} color={theme.placeholder} />
               <TextInput
-                testID="confirm-password-input"
-                placeholder={t.confirmPassword}
+                placeholder={t('confirmPassword')}
                 secureTextEntry={!showConfirmPassword}
                 placeholderTextColor={theme.placeholder}
                 style={[styles.inputFlex, { color: theme.inputText }]}
@@ -189,20 +178,19 @@ const SignupScreen: React.FC<Props> = ({ navigation }) => {
 
             {/* Signup Button */}
             <TouchableOpacity
-              testID="signup-button"
               style={[styles.loginButton, { backgroundColor: theme.button }]}
               onPress={() => handleSubmit()}
               disabled={isLoading}
             >
               <Text style={[styles.loginButtonText, { color: theme.buttonText }]}>
-                {isLoading ? t.loading : t.signup}
+                {isLoading ? t('loading') : t('signup')}
               </Text>
             </TouchableOpacity>
 
             {/* Link to Login */}
             <View style={styles.linkContainer}>
               <Text style={styles.link} onPress={() => navigation.navigate('Login')}>
-                {t.login}
+                {t('login')}
               </Text>
             </View>
           </View>
@@ -256,9 +244,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 10,
     paddingHorizontal: 10,
-  },
-  icon: {
-    marginRight: 8,
   },
   inputFlex: {
     flex: 1,

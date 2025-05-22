@@ -21,6 +21,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Picker } from '@react-native-picker/picker';
 
 type RootStackParamList = {
   Home: undefined;
@@ -63,7 +64,7 @@ const UserScreen = () => {
           });
         }
       } catch {
-        Alert.alert(t.genericError, t.loading);
+        Alert.alert(t('genericError'), t('loading'));
       }
     };
 
@@ -87,7 +88,7 @@ const UserScreen = () => {
         await AsyncStorage.setItem('avatarUri', localUri);
       }
     } catch {
-      Alert.alert(t.genericError, t.loading);
+      Alert.alert(t('genericError'), t('loading'));
     }
   };
 
@@ -97,34 +98,32 @@ const UserScreen = () => {
     if (!user) return;
 
     if (!fullName.trim()) {
-      Alert.alert(t.genericError, `${t.fullName} ${t.required.toLowerCase()}!`);
+      Alert.alert(t('genericError'), `${t('fullName')} ${t('required').toLowerCase()}!`);
       return;
     }
 
     if (!age || isNaN(Number(age)) || Number(age) > 150) {
-      Alert.alert(t.genericError, `${t.age} không hợp lệ!`);
+      Alert.alert(t('genericError'), `${t('age')} không hợp lệ!`);
       return;
     }
 
-    if (!gender || ![t.male.toLowerCase(), t.female.toLowerCase()].includes(gender.toLowerCase())) {
-      Alert.alert(t.genericError, `${t.gender} chỉ được chọn "${t.male}" hoặc "${t.female}"!`);
+    if (!gender || ![t('male').toLowerCase(), t('female').toLowerCase()].includes(gender.toLowerCase())) {
+      Alert.alert(t('genericError'), `${t('gender')} chỉ được chọn "${t('male')}" hoặc "${t('female')}"!`);
       return;
     }
 
     const userRef = ref(db, `users/${user.uid}`);
     await set(userRef, { fullName, age, gender, avatarUrl });
 
-    Alert.alert('✅', t.save);
+    Alert.alert('✅', t('save'));
   };
 
   return (
     <ScrollView contentContainerStyle={[styles.container, { backgroundColor: theme.background }]}>
-      {/* Nút quay lại */}
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Ionicons name="arrow-back" size={24} color={theme.text} />
       </TouchableOpacity>
 
-      {/* Ảnh đại diện */}
       <TouchableOpacity onPress={pickImage}>
         <Image
           source={
@@ -134,14 +133,13 @@ const UserScreen = () => {
           }
           style={styles.avatar}
         />
-        <Text style={[styles.linkText, { color: theme.button }]}>{t.changeAvatar}</Text>
+        <Text style={[styles.linkText, { color: theme.button }]}>{t('changeAvatar')}</Text>
       </TouchableOpacity>
 
-      {/* Họ tên */}
       <View style={[styles.inputGroup, { borderColor: theme.border, backgroundColor: theme.inputBg }]}>
         <Ionicons name="person" size={20} color={theme.text} style={styles.icon} />
         <TextInput
-          placeholder={t.fullName}
+          placeholder={t('fullName')}
           value={userData.fullName}
           onChangeText={(text) => setUserData({ ...userData, fullName: text })}
           style={[styles.input, { color: theme.inputText }]}
@@ -149,11 +147,10 @@ const UserScreen = () => {
         />
       </View>
 
-      {/* Tuổi */}
       <View style={[styles.inputGroup, { borderColor: theme.border, backgroundColor: theme.inputBg }]}>
         <Ionicons name="calendar" size={20} color={theme.text} style={styles.icon} />
         <TextInput
-          placeholder={t.age}
+          placeholder={t('age')}
           keyboardType="numeric"
           value={userData.age}
           onChangeText={(text) => setUserData({ ...userData, age: text })}
@@ -162,11 +159,10 @@ const UserScreen = () => {
         />
       </View>
 
-      {/* Giới tính */}
       <View style={[styles.inputGroup, { borderColor: theme.border, backgroundColor: theme.inputBg }]}>
         <Ionicons name="transgender" size={20} color={theme.text} style={styles.icon} />
         <TextInput
-          placeholder={`${t.gender} (${t.male}/${t.female})`}
+          placeholder={`${t('gender')} (${t('male')}/${t('female')})`}
           value={userData.gender}
           onChangeText={(text) => setUserData({ ...userData, gender: text })}
           style={[styles.input, { color: theme.inputText }]}
@@ -174,12 +170,11 @@ const UserScreen = () => {
         />
       </View>
 
-      {/* Nút lưu */}
       <TouchableOpacity
         style={[styles.button, { backgroundColor: theme.button }]}
         onPress={handleSave}
       >
-        <Text style={[styles.buttonText, { color: theme.buttonText }]}>{t.save}</Text>
+        <Text style={[styles.buttonText, { color: theme.buttonText }]}>{t('save')}</Text>
       </TouchableOpacity>
     </ScrollView>
   );

@@ -30,7 +30,7 @@ const SettingsScreen = () => {
     try {
       await signOut(auth);
     } catch {
-      Alert.alert(t.genericError);
+      Alert.alert(t('genericError'));
     }
   };
 
@@ -41,7 +41,7 @@ const SettingsScreen = () => {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       {/* Tiêu đề */}
-      <Text style={[styles.header, { color: theme.text }]}>{t.settings || 'Cài đặt'}</Text>
+      <Text style={[styles.header, { color: theme.text }]}>{t('settings')}</Text>
 
       {/* Tài khoản */}
       <TouchableOpacity
@@ -51,7 +51,7 @@ const SettingsScreen = () => {
       >
         <View style={styles.itemContent}>
           <Ionicons name="person-outline" size={24} color={theme.text} style={styles.icon} />
-          <Text style={[styles.text, { color: theme.text }]}>{t.fullName}</Text>
+          <Text style={[styles.text, { color: theme.text }]}>{t('fullName')}</Text>
         </View>
       </TouchableOpacity>
 
@@ -59,9 +59,14 @@ const SettingsScreen = () => {
       <View style={[styles.item, { backgroundColor: theme.inputBg || '#fff' }]}>
         <View style={styles.itemContent}>
           <Ionicons name="moon-outline" size={24} color={theme.text} style={styles.icon} />
-          <Text style={[styles.text, { color: theme.text }]}>{t.darkMode}</Text>
+          <Text style={[styles.text, { color: theme.text }]}>{t('darkMode')}</Text>
         </View>
-        <Switch value={isDarkMode} onValueChange={toggleTheme} thumbColor={isDarkMode ? '#fff' : '#f4f3f4'} trackColor={{ false: '#767577', true: '#81b0ff' }} />
+        <Switch
+          value={isDarkMode}
+          onValueChange={toggleTheme}
+          thumbColor={isDarkMode ? '#fff' : '#f4f3f4'}
+          trackColor={{ false: '#767577', true: '#81b0ff' }}
+        />
       </View>
 
       {/* Đổi mật khẩu */}
@@ -72,7 +77,7 @@ const SettingsScreen = () => {
       >
         <View style={styles.itemContent}>
           <Ionicons name="lock-closed-outline" size={24} color={theme.text} style={styles.icon} />
-          <Text style={[styles.text, { color: theme.text }]}>{t.changepassword || 'Đổi mật khẩu'}</Text>
+          <Text style={[styles.text, { color: theme.text }]}>{t('changepassword')}</Text>
         </View>
       </TouchableOpacity>
 
@@ -84,7 +89,7 @@ const SettingsScreen = () => {
       >
         <View style={styles.itemContent}>
           <Ionicons name="language-outline" size={24} color={theme.text} style={styles.icon} />
-          <Text style={[styles.text, { color: theme.text }]}>{t.language}</Text>
+          <Text style={[styles.text, { color: theme.text }]}>{t('language')}</Text>
         </View>
         <Text style={[styles.subText, { color: theme.text }]}>{language.toUpperCase()}</Text>
       </TouchableOpacity>
@@ -109,7 +114,7 @@ const SettingsScreen = () => {
       >
         <View style={styles.itemContent}>
           <Ionicons name="log-out-outline" size={24} color="red" style={styles.icon} />
-          <Text style={[styles.text, { color: 'red' }]}>{t.logout}</Text>
+          <Text style={[styles.text, { color: 'red' }]}>{t('logout')}</Text>
         </View>
       </TouchableOpacity>
 
@@ -123,8 +128,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 20,
-    paddingTop: 30, // Thêm paddingTop để có khoảng cách trên
-    marginBottom: 20, // Thêm khoảng cách dưới
+    paddingTop: 30,
+    marginBottom: 20,
   },
   header: {
     fontSize: 28,
@@ -133,38 +138,38 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   item: {
-    paddingVertical: 18, // Tăng từ 14 lên 18
-    paddingHorizontal: 16, // Thêm paddingHorizontal
-    borderRadius: 12, // Thêm borderRadius để bo góc
-    marginBottom: 10, // Thêm khoảng cách giữa các mục
+    paddingVertical: 18,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    marginBottom: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    elevation: 2, // Thêm bóng trên Android
-    shadowColor: '#000', // Thêm bóng trên iOS
+    elevation: 2,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
   },
   logoutItem: {
     borderWidth: 1,
-    borderColor: 'red', // Thêm viền đỏ cho mục Đăng xuất
+    borderColor: 'red',
   },
   itemContent: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   icon: {
-    marginRight: 12, // Khoảng cách giữa biểu tượng và văn bản
+    marginRight: 12,
   },
   text: {
-    fontSize: 18, // Tăng từ 16 lên 18
+    fontSize: 18,
     fontWeight: '500',
   },
   subText: {
     fontSize: 16,
     fontWeight: '500',
-    paddingHorizontal: 10, // Thêm padding cho ngôn ngữ
+    paddingHorizontal: 10,
   },
 });
 

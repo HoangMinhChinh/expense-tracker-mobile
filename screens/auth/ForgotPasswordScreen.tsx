@@ -1,3 +1,4 @@
+// Đã sửa toàn bộ t.key → t('key')
 import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import {
@@ -21,6 +22,7 @@ type RootStackParamList = {
   Login: undefined;
   ForgotPassword: undefined;
 };
+
 type Props = NativeStackScreenProps<RootStackParamList>;
 
 const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
@@ -33,17 +35,17 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
   const theme = isDarkMode ? darkTheme : lightTheme;
 
   const ForgotSchema = Yup.object().shape({
-    email: Yup.string().email(t.invalidEmail).required(t.required),
+    email: Yup.string().email(t('invalidEmail')).required(t('required')),
   });
 
   const getFriendlyErrorMessage = (error: any) => {
     switch (error.code) {
       case 'auth/user-not-found':
-        return t.userNotFound;
+        return t('userNotFound');
       case 'auth/invalid-email':
-        return t.invalidEmail;
+        return t('invalidEmail');
       default:
-        return t.genericError;
+        return t('genericError');
     }
   };
 
@@ -51,7 +53,7 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
     setIsLoading(true);
     try {
       await sendPasswordResetEmail(auth, values.email);
-      setFeedback(t.success);
+      setFeedback(t('success'));
       setErrorState('');
     } catch (error: any) {
       setErrorState(getFriendlyErrorMessage(error));
@@ -91,7 +93,6 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
         resizeMode="contain"
       />
 
-      {/* Formik Form */}
       <Formik
         initialValues={{ email: '' }}
         validationSchema={ForgotSchema}
@@ -108,7 +109,7 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
               <Ionicons name="mail-outline" size={20} style={styles.icon} color={theme.placeholder} />
               <TextInput
                 testID="email-input"
-                placeholder={t.email}
+                placeholder={t('email')}
                 placeholderTextColor={theme.placeholder}
                 style={[styles.inputFlex, { color: theme.inputText }]}
                 onChangeText={handleChange('email')}
@@ -126,14 +127,14 @@ const ForgotPasswordScreen: React.FC<Props> = ({ navigation }) => {
               disabled={isLoading}
             >
               <Text style={[styles.loginButtonText, { color: theme.buttonText }]}>
-                {isLoading ? t.loading : t.reset}
+                {isLoading ? t('loading') : t('reset')}
               </Text>
             </TouchableOpacity>
 
             {/* Link to Login */}
             <View style={styles.linkContainer}>
               <Text style={styles.link} onPress={() => navigation.navigate('Login')}>
-                {t.login}
+                {t('login')}
               </Text>
             </View>
           </View>

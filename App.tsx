@@ -1,7 +1,7 @@
 import React from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
-import { LanguageProvider } from './context/LanguageContext'; // 👈 thêm dòng này
+import { LanguageProvider } from './context/LanguageContext';
 import RootNavigator from './navigation/RootNavigator';
 
 
